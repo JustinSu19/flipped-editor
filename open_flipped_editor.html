@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="0; url=http://127.0.0.1:5173" />
+    <title>Open Flipped Editor</title>
+    <style>
+      :root {
+        color: #332f29;
+        background: #f7f6f1;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.95), transparent 34%),
+          linear-gradient(180deg, #fbfaf7 0%, #f1eee7 100%);
+      }
+
+      main {
+        width: min(520px, calc(100vw - 40px));
+        padding: 36px;
+        border: 1px solid rgba(112, 106, 94, 0.12);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 24px 70px rgba(42, 38, 32, 0.08);
+        backdrop-filter: blur(20px);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 24px;
+        letter-spacing: 0.01em;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: rgba(51, 47, 41, 0.66);
+        line-height: 1.8;
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        padding: 0 18px;
+        border-radius: 12px;
+        color: #fbfaf6;
+        background: #302d28;
+        font-size: 14px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      code {
+        padding: 2px 6px;
+        border-radius: 7px;
+        background: rgba(80, 76, 68, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Opening Flipped Editor</h1>
+      <p>正在打开本地工具页面。如果没有自动跳转，请先双击运行 <code>run_flipped_editor.py</code> 启动服务。</p>
+      <a href="http://127.0.0.1:5173">打开 Flipped Editor</a>
+    </main>
+  </body>
+</html>
