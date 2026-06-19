@@ -40,11 +40,14 @@
 }
 
 .article-h3 {
-  margin: 42px 0 18px;
-  color: #77736a;
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.08em;
+  margin: 44px 0 18px;
+  padding-left: 13px;
+  border-left: 2px solid rgba(80, 76, 68, 0.22);
+  color: #504c44;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+  letter-spacing: 0.06em;
 }
 
 .article-p {
@@ -71,9 +74,20 @@
 .article-list {
   display: grid;
   gap: 12px;
-  margin: 2px 0 30px;
+  margin: 22px 0 10px;
   padding: 0;
   list-style: none;
+}
+
+.article-h2 + .article-list,
+.article-h3 + .article-list,
+.article-quote + .article-list,
+.article-divider + .article-list {
+  margin-top: 2px;
+}
+
+.article-list + .article-p {
+  margin-top: 0;
 }
 
 .article-list li {

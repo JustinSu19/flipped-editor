@@ -10,7 +10,7 @@ import { TemplateSelector } from './components/TemplateSelector'
 import type { UploadedImage } from './types/image'
 import { defaultStyleConfig, type StyleConfig } from './types/style'
 import type { TemplateId } from './types/template'
-import { copyArticleHtml, downloadHtmlFile } from './utils/exportHtml'
+import { copyArticleRichText } from './utils/exportHtml'
 import { downloadArticlePng } from './utils/exportImage'
 import { parseMarkdown } from './utils/parseMarkdown'
 import { loadState, saveState } from './utils/storage'
@@ -60,7 +60,7 @@ function App() {
     ...persisted.styleConfig,
   })
   const [images, setImages] = useState<UploadedImage[]>([])
-  const [copied, setCopied] = useState(false)
+  const [richCopied, setRichCopied] = useState(false)
   const [exportingPng, setExportingPng] = useState(false)
   const [pngError, setPngError] = useState('')
   const articleRef = useRef<HTMLDivElement>(null)
@@ -96,17 +96,12 @@ function App() {
 
   const articleNode = () => articleRef.current?.querySelector('article') as HTMLElement | null
 
-  const copyHtml = async () => {
+  const copyRichText = async () => {
     const node = articleNode()
     if (!node) return
-    await copyArticleHtml(node)
-    setCopied(true)
-    window.setTimeout(() => setCopied(false), 1400)
-  }
-
-  const exportHtml = () => {
-    const node = articleNode()
-    if (node) downloadHtmlFile(node)
+    await copyArticleRichText(node)
+    setRichCopied(true)
+    window.setTimeout(() => setRichCopied(false), 1400)
   }
 
   const exportPng = async () => {
@@ -174,11 +169,10 @@ function App() {
       }
       toolbarActions={
         <ExportPanel
-          copied={copied}
+          richCopied={richCopied}
           exportingPng={exportingPng}
           pngError={pngError}
-          onCopyHtml={copyHtml}
-          onDownloadHtml={exportHtml}
+          onCopyRichText={() => void copyRichText()}
           onDownloadPng={() => void exportPng()}
         />
       }

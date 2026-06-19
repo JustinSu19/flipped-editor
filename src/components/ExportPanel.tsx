@@ -1,24 +1,19 @@
-import { Check, Clipboard, Download, ImageDown } from 'lucide-react'
+import { Check, Clipboard, ImageDown } from 'lucide-react'
 
 type Props = {
-  copied: boolean
+  richCopied: boolean
   exportingPng: boolean
   pngError?: string
-  onCopyHtml: () => void
-  onDownloadHtml: () => void
+  onCopyRichText: () => void
   onDownloadPng: () => void
 }
 
-export function ExportPanel({ copied, exportingPng, pngError, onCopyHtml, onDownloadHtml, onDownloadPng }: Props) {
+export function ExportPanel({ richCopied, exportingPng, pngError, onCopyRichText, onDownloadPng }: Props) {
   return (
     <div className="export-panel">
-      <button type="button" className="primary-button" onClick={onCopyHtml}>
-        {copied ? <Check size={15} /> : <Clipboard size={15} />}
-        {copied ? '已复制' : '复制到剪贴板'}
-      </button>
-      <button type="button" className="secondary-button" onClick={onDownloadHtml}>
-        <Download size={15} />
-        导出 HTML
+      <button type="button" className="primary-button" onClick={onCopyRichText}>
+        {richCopied ? <Check size={15} /> : <Clipboard size={15} />}
+        {richCopied ? '已复制' : '一键复制'}
       </button>
       <button
         type="button"
