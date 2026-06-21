@@ -33,7 +33,7 @@ export function StylePanel({ value, onChange, onReset }: Props) {
           <span>
             正文字号 <b>{numberValue(value.fontSize, 'px')}</b>
           </span>
-          <input type="range" min="14" max="18" value={value.fontSize} onChange={(e) => onChange(update(value, 'fontSize', Number(e.target.value)))} />
+          <input type="range" min="12" max="18" value={value.fontSize} onChange={(e) => onChange(update(value, 'fontSize', Number(e.target.value)))} />
         </label>
         <label>
           <span>

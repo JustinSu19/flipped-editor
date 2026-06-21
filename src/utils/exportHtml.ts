@@ -88,16 +88,28 @@ const createCopyParagraph = (html: string, style: Partial<CSSStyleDeclaration>) 
 }
 
 const normalizeCopyStructure = (clone: HTMLElement) => {
+  const bodyFontSize = clone.style.fontSize || '15px'
   clone.querySelectorAll<HTMLElement>('.article-list').forEach((list) => {
     const fragment = document.createDocumentFragment()
+    const ordered = list.tagName.toLowerCase() === 'ol' || list.classList.contains('article-list-ordered')
+    const depth = list.classList.contains('article-list-depth-1') ? 1 : 0
+    const start = ordered ? Number(list.getAttribute('start') ?? '1') || 1 : 1
+    const previous = list.previousElementSibling as HTMLElement | null
+    const followsOrdered = !ordered && previous?.classList.contains('article-list-ordered')
+    const followsUnordered = ordered && previous?.classList.contains('article-list-unordered')
+    const firstMargin = depth === 1 ? '-2px 0 5px' : followsOrdered ? '6px 0 8px' : followsUnordered ? '24px 0 8px' : '18px 0 8px'
     Array.from(list.querySelectorAll<HTMLElement>('li')).forEach((item, index) => {
+      const marker = ordered ? `${start + index}.&nbsp;` : depth === 1 ? '◦&nbsp;&nbsp;' : '•&nbsp;&nbsp;'
+      const indentSize = ordered ? '22px' : depth === 1 ? '14px' : '18px'
       fragment.appendChild(
-        createCopyParagraph(`•&nbsp;&nbsp;${item.innerHTML}`, {
-          margin: index === 0 ? '22px 0 8px' : '0 0 8px',
-          padding: '0',
-          color: 'rgb(90, 87, 80)',
-          fontSize: '15px',
-          lineHeight: '1.85',
+        createCopyParagraph(`${marker}${item.innerHTML}`, {
+          margin: index === 0 ? firstMargin : '0 0 8px',
+          marginLeft: depth === 1 ? '24px' : '0',
+          padding: `0 0 0 ${indentSize}`,
+          textIndent: `-${indentSize}`,
+          color: depth === 1 ? 'rgb(112, 107, 98)' : 'rgb(90, 87, 80)',
+          fontSize: bodyFontSize,
+          lineHeight: depth === 1 ? '1.72' : '1.85',
           textAlign: 'left',
           wordBreak: 'normal',
         }),
@@ -128,6 +140,7 @@ const setStyles = (element: HTMLElement, styles: Partial<CSSStyleDeclaration>) =
 }
 
 const normalizeRichTextStyles = (clone: HTMLElement) => {
+  const bodyFontSize = clone.style.fontSize || '15px'
   setStyles(clone, {
     width: '100%',
     maxWidth: '100%',
@@ -216,7 +229,7 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
     setStyles(element, {
       margin: '0 0 16px',
       color: 'rgb(90, 87, 80)',
-      fontSize: '15px',
+      fontSize: bodyFontSize,
       lineHeight: '1.9',
     })
   })
@@ -238,7 +251,7 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
       margin: '22px 0 10px',
       padding: '0 0 0 20px',
       display: 'block',
-      listStyle: 'disc',
+      listStyle: element.tagName.toLowerCase() === 'ol' ? 'decimal' : 'disc',
       color: 'rgb(90, 87, 80)',
     })
   })

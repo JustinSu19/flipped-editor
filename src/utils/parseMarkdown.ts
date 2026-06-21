@@ -61,6 +61,9 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
   const blocks: ContentBlock[] = []
   let paragraph: string[] = []
   let list: string[] = []
+  let listOrdered = false
+  let listStart = 1
+  let listDepth: 0 | 1 = 0
   let quote: string[] = []
   let autoImageIndex = 1
 
@@ -73,8 +76,17 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
 
   const flushList = () => {
     if (list.length) {
-      blocks.push({ type: 'list', items: list.map(inlineText) })
+      blocks.push({
+        type: 'list',
+        items: list.map(inlineText),
+        ordered: listOrdered,
+        start: listOrdered ? listStart : undefined,
+        depth: listDepth,
+      })
       list = []
+      listOrdered = false
+      listStart = 1
+      listDepth = 0
     }
   }
 
@@ -150,11 +162,32 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
       continue
     }
 
-    const listItem = line.match(/^[-*+]\s+(.+)$/)
-    if (listItem) {
+    const unorderedListItem = lines[index].match(/^(\s{0,4}|\t)[-*+]\s+(.+)$/)
+    if (unorderedListItem) {
       flushParagraph()
       flushQuote()
-      list.push(listItem[1])
+      const depth = unorderedListItem[1].length > 0 ? 1 : 0
+      if (list.length && (listOrdered || listDepth !== depth)) flushList()
+      if (!list.length) {
+        listOrdered = false
+        listStart = 1
+        listDepth = depth
+      }
+      list.push(unorderedListItem[2])
+      index += 1
+      continue
+    }
+
+    const orderedListItem = line.match(/^(\d+)[.)]\s+(.+)$/)
+    if (orderedListItem) {
+      flushParagraph()
+      flushQuote()
+      if (list.length && !listOrdered) flushList()
+      if (!list.length) {
+        listOrdered = true
+        listStart = Number(orderedListItem[1])
+      }
+      list.push(orderedListItem[2])
       index += 1
       continue
     }

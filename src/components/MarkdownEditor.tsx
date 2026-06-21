@@ -52,6 +52,42 @@ export const MarkdownEditor = forwardRef<HTMLTextAreaElement, Props>(function Ma
     })
   }
 
+  const handleTabKey = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Tab') return
+    const textarea = event.currentTarget
+    const lineStart = value.lastIndexOf('\n', textarea.selectionStart - 1) + 1
+    const lineEnd = value.indexOf('\n', textarea.selectionStart)
+    const currentLineEnd = lineEnd === -1 ? value.length : lineEnd
+    const currentLine = value.slice(lineStart, currentLineEnd)
+    const isListLine = /^(\s*)[-*+]\s+/.test(currentLine)
+    if (!isListLine) return
+
+    event.preventDefault()
+    const currentIndent = currentLine.match(/^(\s*)/)?.[1] ?? ''
+
+    if (event.shiftKey) {
+      if (!currentIndent) return
+      const removeCount = currentIndent.startsWith('\t') ? 1 : Math.min(2, currentIndent.length)
+      const nextValue = `${value.slice(0, lineStart)}${currentLine.slice(removeCount)}${value.slice(currentLineEnd)}`
+      onChange(nextValue)
+      window.requestAnimationFrame(() => {
+        textarea.focus()
+        const cursor = Math.max(lineStart, textarea.selectionStart - removeCount)
+        textarea.setSelectionRange(cursor, cursor)
+      })
+      return
+    }
+
+    if (currentIndent.length > 0) return
+    const nextValue = `${value.slice(0, lineStart)}  ${value.slice(lineStart)}`
+    onChange(nextValue)
+    window.requestAnimationFrame(() => {
+      textarea.focus()
+      const cursor = textarea.selectionStart + 2
+      textarea.setSelectionRange(cursor, cursor)
+    })
+  }
+
   return (
     <section className="editor-section">
       <div className="section-title markdown-title">
@@ -86,6 +122,7 @@ export const MarkdownEditor = forwardRef<HTMLTextAreaElement, Props>(function Ma
           ref={setTextareaRef}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          onKeyDown={handleTabKey}
           onScroll={(event) => {
             if (gutterRef.current) gutterRef.current.scrollTop = event.currentTarget.scrollTop
             onScroll?.(event.currentTarget)

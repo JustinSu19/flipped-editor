@@ -73,31 +73,69 @@
 
 .article-list {
   display: grid;
-  gap: 12px;
-  margin: 22px 0 10px;
+  gap: 10px;
+  margin: 18px 0 18px;
+  color: rgba(84, 80, 72, 0.88);
+}
+
+.article-list-ordered {
+  padding-left: 24px;
+  list-style: decimal;
+}
+
+.article-list-unordered {
+  margin-top: 8px;
+  margin-bottom: 22px;
   padding: 0;
   list-style: none;
+}
+
+.article-list-depth-1 {
+  gap: 7px;
+  margin-top: 2px;
+  margin-bottom: 18px;
+  padding-left: 18px;
+}
+
+.article-list-ordered + .article-list-unordered {
+  margin-top: 6px;
+}
+
+.article-list-ordered + .article-list-depth-1 {
+  margin-top: 2px;
+}
+
+.article-list-unordered + .article-list-ordered,
+.article-list-unordered + .article-p,
+.article-list-unordered + .article-h2,
+.article-list-unordered + .article-h3 {
+  margin-top: 24px;
 }
 
 .article-h2 + .article-list,
 .article-h3 + .article-list,
 .article-quote + .article-list,
 .article-divider + .article-list {
-  margin-top: 2px;
-}
-
-.article-list + .article-p {
-  margin-top: 0;
+  margin-top: 8px;
 }
 
 .article-list li {
   position: relative;
-  padding-left: 22px;
   color: rgba(84, 80, 72, 0.86);
   line-height: inherit;
 }
 
-.article-list li::before {
+.article-list-unordered li {
+  padding-left: 22px;
+}
+
+.article-list-depth-1 li {
+  padding-left: 18px;
+  color: rgba(84, 80, 72, 0.72);
+  font-size: 0.96em;
+}
+
+.article-list-unordered li::before {
   content: "";
   position: absolute;
   left: 3px;
@@ -107,6 +145,15 @@
   border-radius: 999px;
   background: rgba(80, 76, 68, 0.34);
   box-shadow: 0 0 0 4px rgba(80, 76, 68, 0.045);
+}
+
+.article-list-depth-1 li::before {
+  left: 2px;
+  top: 0.98em;
+  width: 3px;
+  height: 3px;
+  background: rgba(80, 76, 68, 0.22);
+  box-shadow: 0 0 0 3px rgba(80, 76, 68, 0.035);
 }
 
 .article-quote {

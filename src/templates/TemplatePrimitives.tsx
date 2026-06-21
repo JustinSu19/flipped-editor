@@ -173,8 +173,17 @@ export const renderTextBlock = (block: ContentBlock, styleConfig: StyleConfig, i
     )
   }
   if (block.type === 'list') {
+    if (block.ordered) {
+      return (
+        <ol key={index} className="article-list article-list-ordered" start={block.start}>
+          {block.items.map((item, itemIndex) => (
+            <li key={itemIndex} dangerouslySetInnerHTML={{ __html: item }} />
+          ))}
+        </ol>
+      )
+    }
     return (
-      <ul key={index} className="article-list">
+      <ul key={index} className={`article-list article-list-unordered article-list-depth-${block.depth ?? 0}`}>
         {block.items.map((item, itemIndex) => (
           <li key={itemIndex} dangerouslySetInnerHTML={{ __html: item }} />
         ))}

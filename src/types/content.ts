@@ -7,7 +7,7 @@ export type ContentBlock =
   | { type: 'h3'; text: string }
   | { type: 'paragraph'; text: string }
   | { type: 'quote'; text: string }
-  | { type: 'list'; items: string[] }
+  | { type: 'list'; items: string[]; ordered?: boolean; start?: number; depth?: 0 | 1 }
   | { type: 'table'; headers: string[]; rows: string[][]; align: TableAlign[] }
   | { type: 'divider' }
   | { type: 'image'; id: string; variant: ImageVariant }
