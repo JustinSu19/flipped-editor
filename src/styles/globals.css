@@ -140,16 +140,6 @@ button {
   min-width: 0;
 }
 
-.toolbar-status {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  gap: 7px;
-  color: rgba(45, 42, 36, 0.62);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
 .toolbar-button {
   display: inline-flex;
   align-items: center;
@@ -234,6 +224,21 @@ button {
 
 .markdown-title {
   align-items: center;
+}
+
+.markdown-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(112, 106, 94, 0.13);
+  border-radius: 7px;
+  color: rgba(48, 45, 40, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 243, 237, 0.72)),
+    rgba(255, 255, 255, 0.64);
+  box-shadow: 0 8px 18px rgba(42, 38, 32, 0.045);
 }
 
 .markdown-actions {
@@ -726,6 +731,14 @@ button {
   accent-color: #8d7d65;
 }
 
+.field-grid label.disabled-field {
+  opacity: 0.48;
+}
+
+.field-grid label.disabled-field input {
+  cursor: not-allowed;
+}
+
 .field-grid select {
   height: 30px;
   border: 1px solid rgba(112, 106, 94, 0.13);
@@ -737,30 +750,41 @@ button {
 }
 
 .swatch-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
   margin-top: 10px;
 }
 
 .swatch-row button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   height: 30px;
-  padding: 0 10px;
+  min-width: 0;
+  padding: 0 6px;
   border: 1px solid rgba(112, 106, 94, 0.13);
   border-radius: 7px;
   color: rgba(48, 45, 40, 0.62);
   background: rgba(255, 255, 255, 0.62);
-  font-size: 11px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.swatch-row button.active {
+  border-color: rgba(141, 125, 101, 0.42);
+  color: #302d28;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: inset 0 0 0 1px rgba(141, 125, 101, 0.08);
 }
 
 .swatch-row span {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
   border: 1px solid rgba(112, 106, 94, 0.14);
-  border-radius: 6px;
+  border-radius: 5px;
 }
 
 .export-panel {
@@ -817,8 +841,42 @@ button {
 }
 
 .preview-panel {
+  position: relative;
   overflow: hidden;
   padding: 0;
+}
+
+.preview-mode-switch {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 5;
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(112, 106, 94, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 14px 34px rgba(42, 38, 32, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.preview-mode-switch button {
+  height: 27px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(48, 45, 40, 0.58);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 650;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.preview-mode-switch button.active {
+  color: #302d28;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 7px 18px rgba(42, 38, 32, 0.08);
 }
 
 .preview-stage {
@@ -828,7 +886,7 @@ button {
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding: 34px 34px 60px;
+  padding: 58px 34px 60px;
   background:
     radial-gradient(circle at 50% 5%, rgba(255, 255, 255, 0.94), transparent 28%),
     linear-gradient(180deg, rgba(248, 247, 243, 0.82), rgba(239, 237, 231, 0.72));
@@ -836,6 +894,10 @@ button {
 
 .export-target {
   transition: transform 180ms ease;
+}
+
+.wechat-mode .article-canvas {
+  width: min(430px, calc(100vw - 64px)) !important;
 }
 
 .export-target:fullscreen {
@@ -866,9 +928,6 @@ button {
     grid-template-columns: minmax(360px, 500px) minmax(430px, 1fr) 320px;
   }
 
-  .toolbar-status {
-    display: none;
-  }
 }
 
 @media (max-width: 1120px) {
@@ -930,6 +989,11 @@ button {
   }
 
   .preview-stage {
-    padding: 18px 8px 30px;
+    padding: 56px 8px 30px;
+  }
+
+  .preview-mode-switch {
+    top: 12px;
+    right: 12px;
   }
 }

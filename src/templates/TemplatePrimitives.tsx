@@ -7,12 +7,18 @@ import { getImageByBlock, imageFilter, recommendedAspect } from '../utils/imageU
 type ArticleCssVars = React.CSSProperties & {
   '--article-image-gap': string
   '--article-body-block': string
+  '--article-page-margin': string
+  '--article-muted-color': string
+  '--article-soft-color': string
+  '--article-strong-color': string
+  '--article-line-color': string
 }
 
 export const fontFamilyMap: Record<StyleConfig['fontFamily'], string> = {
   songti: '"Songti SC", "SimSun", "Noto Serif SC", serif',
   fangsong: '"FangSong", "STFangsong", "Noto Serif SC", serif',
   serif: 'Georgia, "Times New Roman", "Noto Serif SC", serif',
+  yahei: '"Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif',
 }
 
 const whitespaceScale: Record<StyleConfig['whitespaceLevel'], number> = {
@@ -23,6 +29,15 @@ const whitespaceScale: Record<StyleConfig['whitespaceLevel'], number> = {
 
 export const spacing = (styleConfig: StyleConfig, value: number) =>
   Math.round(value * whitespaceScale[styleConfig.whitespaceLevel])
+
+function colorMix(color: string, alpha: number) {
+  const normalized = color.replace('#', '')
+  if (normalized.length !== 6) return color
+  const red = Number.parseInt(normalized.slice(0, 2), 16)
+  const green = Number.parseInt(normalized.slice(2, 4), 16)
+  const blue = Number.parseInt(normalized.slice(4, 6), 16)
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
 
 export const articleStyle = (styleConfig: StyleConfig): ArticleCssVars => ({
   width: styleConfig.articleWidth,
@@ -35,6 +50,11 @@ export const articleStyle = (styleConfig: StyleConfig): ArticleCssVars => ({
   letterSpacing: '0.02em',
   '--article-image-gap': `${spacing(styleConfig, 48)}px`,
   '--article-body-block': `${spacing(styleConfig, 42)}px`,
+  '--article-page-margin': `${styleConfig.pageMargin}px`,
+  '--article-muted-color': styleConfig.textColor,
+  '--article-soft-color': colorMix(styleConfig.textColor, 0.72),
+  '--article-strong-color': colorMix(styleConfig.titleColor, 0.94),
+  '--article-line-color': colorMix(styleConfig.textColor, 0.18),
 })
 
 export const overlayTextColor = (image: UploadedImage | undefined, fallback: string) =>

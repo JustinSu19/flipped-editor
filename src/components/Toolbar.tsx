@@ -1,4 +1,4 @@
-import { Clock, Maximize2 } from 'lucide-react'
+import { Maximize2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 type Props = {
@@ -24,15 +24,11 @@ export function Toolbar({ actions, onFullscreen }: Props) {
         </div>
       </div>
       <div className="toolbar-actions">
-        <div className="toolbar-status">
-          <Clock size={14} />
-          <span>文档已保存</span>
-        </div>
-        {actions}
         <button type="button" className="toolbar-button" onClick={onFullscreen}>
           <Maximize2 size={15} />
           全屏预览
         </button>
+        {actions}
       </div>
     </header>
   )

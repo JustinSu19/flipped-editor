@@ -1,8 +1,15 @@
 import type { ContentBlock } from '../types/content'
+import type { ImageVariant } from '../types/content'
 import type { TemplateProps } from '../types/template'
 import { Decor, ImageBlock, articleStyle, renderTextBlock } from './TemplatePrimitives'
 
 const fixedHeroBlock: ContentBlock = { type: 'image', id: 'hero', variant: 'hero' }
+
+const imageEssayClass = (variant: ImageVariant) => {
+  if (variant === 'small' || variant === 'square') return 'image-small-center'
+  if (variant === 'split') return 'image-medium-center'
+  return 'image-full-bleed'
+}
 
 export function ImageEssayTemplate({ blocks, images, styleConfig, onImageChange }: TemplateProps) {
   const heroIndex = blocks.findIndex((block) => block.type === 'image' && block.variant === 'hero')
@@ -16,23 +23,15 @@ export function ImageEssayTemplate({ blocks, images, styleConfig, onImageChange 
         {blocks.map((block, index) => {
           if (index === heroIndex) return null
           if (block.type === 'image') {
-            const small = index % 2 === 0 || block.variant === 'small' || block.variant === 'square'
             return (
               <ImageBlock
                 key={index}
                 block={block}
                 images={images}
                 styleConfig={styleConfig}
-                className={small ? 'image-small-center' : 'image-full-bleed'}
+                className={imageEssayClass(block.variant)}
                 onImageChange={onImageChange}
               />
-            )
-          }
-          if (block.type === 'paragraph' && index > 0 && index % 5 === 0) {
-            return (
-              <div key={index} className="essay-break">
-                {renderTextBlock(block, styleConfig, index)}
-              </div>
             )
           }
           return renderTextBlock(block, styleConfig, index)

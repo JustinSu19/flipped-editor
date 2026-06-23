@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
@@ -8,12 +9,13 @@ import webbrowser
 from pathlib import Path
 
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
+LOCAL_HOST = "127.0.0.1"
 PORT = 5173
-URL = f"http://{HOST}:{PORT}"
+URL = f"http://{LOCAL_HOST}:{PORT}"
 VERSION_URL = f"{URL}/flipped-editor-version.json"
 EXPECTED_APP = "flipped-editor"
-EXPECTED_VERSION = "v2.1-bugfix"
+EXPECTED_VERSION = "v2.2-previewstyle"
 
 
 def fetch_text(url: str, timeout: float = 1.2) -> str | None:
@@ -45,6 +47,48 @@ def npm_command() -> str:
     return "npm.cmd" if os.name == "nt" else "npm"
 
 
+def local_network_urls() -> list[str]:
+    urls: list[str] = []
+    seen: set[str] = set()
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            probe.connect(("8.8.8.8", 80))
+            address = probe.getsockname()[0]
+            if not address.startswith("127."):
+                seen.add(address)
+                urls.append(f"http://{address}:{PORT}")
+    except OSError:
+        pass
+
+    try:
+        hostname = socket.gethostname()
+        candidates = socket.getaddrinfo(hostname, None, family=socket.AF_INET)
+    except OSError:
+        candidates = []
+
+    for candidate in candidates:
+        address = candidate[4][0]
+        if address.startswith("127.") or address in seen:
+            continue
+        seen.add(address)
+        urls.append(f"http://{address}:{PORT}")
+
+    return urls
+
+
+def print_access_urls() -> None:
+    print(f"Computer URL: {URL}")
+    phone_urls = local_network_urls()
+    if phone_urls:
+        print("Phone URL on the same Wi-Fi:")
+        for phone_url in phone_urls:
+            print(f"  {phone_url}")
+    else:
+        print("Phone URL: run ipconfig and use your IPv4 address, for example http://192.168.x.x:5173")
+    print()
+
+
 def wait_before_exit() -> None:
     if os.name == "nt":
         input("\nPress Enter to close this window...")
@@ -58,6 +102,7 @@ def main() -> int:
         if is_expected_flipped_editor():
             print(f"Flipped Editor is already running: {URL}")
             print(f"Version: {EXPECTED_VERSION}")
+            print_access_urls()
             webbrowser.open(URL)
             return 0
 
@@ -70,8 +115,7 @@ def main() -> int:
     print("Starting Flipped Editor...")
     print(f"Project: {project_dir}")
     print(f"Version: {EXPECTED_VERSION}")
-    print(f"URL: {URL}")
-    print()
+    print_access_urls()
 
     process = subprocess.Popen(
         [npm_command(), "run", "dev", "--", "--host", HOST, "--port", str(PORT), "--strictPort"],

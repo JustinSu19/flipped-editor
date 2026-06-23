@@ -1,4 +1,4 @@
-import { FileImage, FileText } from 'lucide-react'
+import { BookOpenText, FileImage } from 'lucide-react'
 import { forwardRef, useRef, useState } from 'react'
 
 type Props = {
@@ -91,7 +91,9 @@ export const MarkdownEditor = forwardRef<HTMLTextAreaElement, Props>(function Ma
   return (
     <section className="editor-section">
       <div className="section-title markdown-title">
-        <FileText size={16} />
+        <span className="markdown-title-icon">
+          <BookOpenText size={15} />
+        </span>
         <span>Markdown 输入</span>
         <div className="markdown-actions">
           <small>字数: {value.replace(/\s/g, '').length}</small>

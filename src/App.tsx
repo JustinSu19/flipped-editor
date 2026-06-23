@@ -5,6 +5,7 @@ import { ExportPanel } from './components/ExportPanel'
 import { ImageUploader } from './components/ImageUploader'
 import { MarkdownEditor } from './components/MarkdownEditor'
 import { PreviewPanel } from './components/PreviewPanel'
+import type { PreviewMode } from './components/PreviewPanel'
 import { StylePanel } from './components/StylePanel'
 import { TemplateSelector } from './components/TemplateSelector'
 import type { UploadedImage } from './types/image'
@@ -61,6 +62,7 @@ function App() {
   })
   const [images, setImages] = useState<UploadedImage[]>([])
   const [richCopied, setRichCopied] = useState(false)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('wechat')
   const [exportingPng, setExportingPng] = useState(false)
   const [pngError, setPngError] = useState('')
   const articleRef = useRef<HTMLDivElement>(null)
@@ -148,6 +150,8 @@ function App() {
           images={images}
           selectedTemplate={selectedTemplate}
           styleConfig={styleConfig}
+          previewMode={previewMode}
+          onPreviewModeChange={setPreviewMode}
           onScroll={(element) => syncScroll(element, editorScrollRef.current, 'preview')}
           onImageChange={(nextImage) =>
             setImages((currentImages) =>
@@ -164,7 +168,12 @@ function App() {
             onChange={(decorText) => setStyleConfig((current) => ({ ...current, decorText }))}
           />
           <ImageUploader images={images} onChange={setImages} />
-          <StylePanel value={styleConfig} onChange={setStyleConfig} onReset={() => setStyleConfig(defaultStyleConfig)} />
+          <StylePanel
+            value={styleConfig}
+            previewMode={previewMode}
+            onChange={setStyleConfig}
+            onReset={() => setStyleConfig(defaultStyleConfig)}
+          />
         </>
       }
       toolbarActions={

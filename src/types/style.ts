@@ -1,5 +1,6 @@
 export type StyleConfig = {
   articleWidth: number
+  pageMargin: number
   backgroundColor: string
   paperColor: string
   textColor: string
@@ -11,17 +12,18 @@ export type StyleConfig = {
   imageRadius: number
   imageFilterStrength: number
   whitespaceLevel: 'compact' | 'balanced' | 'airy'
-  fontFamily: 'songti' | 'fangsong' | 'serif'
+  fontFamily: 'songti' | 'fangsong' | 'serif' | 'yahei'
   decorText: string
 }
 
 export const defaultStyleConfig: StyleConfig = {
   articleWidth: 390,
+  pageMargin: 22,
   backgroundColor: '#f5f5f2',
-  paperColor: '#f7f3e8',
-  textColor: '#66645c',
-  titleColor: '#3f3d38',
-  fontSize: 12,
+  paperColor: '#f8f1dc',
+  textColor: '#665f50',
+  titleColor: '#3f392f',
+  fontSize: 14,
   lineHeight: 1.9,
   paragraphSpacing: 20,
   sectionSpacing: 68,
