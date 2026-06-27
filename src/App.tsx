@@ -10,6 +10,7 @@ import { sampleMarkdown } from './data/sampleMarkdown'
 import type { UploadedImage } from './types/image'
 import { defaultStyleConfig, type StyleConfig } from './types/style'
 import type { TemplateId } from './types/template'
+import { trackEvent } from './utils/analytics'
 import { copyArticleRichText } from './utils/exportHtml'
 import { downloadArticlePng } from './utils/exportImage'
 import { createUploadedImage } from './utils/imageUtils'
@@ -39,6 +40,7 @@ function App() {
   const previewScrollRef = useRef<HTMLDivElement>(null)
   const scrollOwnerRef = useRef<'editor' | 'preview' | null>(null)
   const releaseScrollLockRef = useRef<number | null>(null)
+  const editorStartedRef = useRef(false)
 
   const blocks = useMemo(() => parseMarkdown(markdown), [markdown])
 
@@ -67,6 +69,21 @@ function App() {
 
   const articleNode = () => articleRef.current?.querySelector('article') as HTMLElement | null
 
+  const updateMarkdown = (nextMarkdown: string) => {
+    if (!editorStartedRef.current && nextMarkdown !== markdown) {
+      editorStartedRef.current = true
+      trackEvent('editor_start')
+    }
+    setMarkdown(nextMarkdown)
+  }
+
+  const switchTemplate = (templateId: TemplateId) => {
+    if (templateId !== selectedTemplate) {
+      trackEvent('template_switch', { template: templateId })
+    }
+    setSelectedTemplate(templateId)
+  }
+
   const upsertImage = (nextImage: UploadedImage) => {
     setImages((currentImages) => {
       const exists = currentImages.some((image) => image.id === nextImage.id)
@@ -78,6 +95,7 @@ function App() {
   const uploadImageForId = async (id: string, file: File) => {
     const nextImage = await createUploadedImage(file, id)
     upsertImage(nextImage)
+    trackEvent('image_upload')
     return nextImage
   }
 
@@ -91,6 +109,7 @@ function App() {
   const copyRichText = async () => {
     const node = articleNode()
     if (!node) return
+    trackEvent('copy_to_wechat')
     await copyArticleRichText(node)
     setRichCopied(true)
     window.setTimeout(() => setRichCopied(false), 1400)
@@ -99,6 +118,7 @@ function App() {
   const exportPng = async () => {
     const node = articleNode()
     if (!node || exportingPng) return
+    trackEvent('export_long_image')
     setExportingPng(true)
     setPngError('')
     try {
@@ -129,7 +149,7 @@ function App() {
         <MarkdownEditor
           ref={editorScrollRef}
           value={markdown}
-          onChange={setMarkdown}
+          onChange={updateMarkdown}
           onInsertImageUpload={uploadInlineImage}
         />
       }
@@ -151,7 +171,7 @@ function App() {
       }
       inspector={
         <>
-          <TemplateSelector selected={selectedTemplate} onChange={setSelectedTemplate} />
+          <TemplateSelector selected={selectedTemplate} onChange={switchTemplate} />
           <DecorTextPanel
             value={styleConfig.decorText}
             onChange={(decorText) => setStyleConfig((current) => ({ ...current, decorText }))}
