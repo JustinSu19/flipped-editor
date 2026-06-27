@@ -18,7 +18,7 @@ export type StyleConfig = {
 
 export const defaultStyleConfig: StyleConfig = {
   articleWidth: 390,
-  pageMargin: 22,
+  pageMargin: 43,
   backgroundColor: '#f5f5f2',
   paperColor: '#f8f1dc',
   textColor: '#665f50',

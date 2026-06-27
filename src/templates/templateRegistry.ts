@@ -1,8 +1,8 @@
+import type { TemplateDefinition } from '../types/template'
 import { ChapterCardsTemplate } from './ChapterCardsTemplate'
 import { ImageEssayTemplate } from './ImageEssayTemplate'
 import { NatureMagazineTemplate } from './NatureMagazineTemplate'
 import { PoeticMinimalTemplate } from './PoeticMinimalTemplate'
-import type { TemplateDefinition } from '../types/template'
 
 export const templateRegistry: TemplateDefinition[] = [
   {

@@ -5,15 +5,55 @@ const imageVariantIds: Record<string, ImageVariant> = {
   hero: 'hero',
   wide: 'wide',
   square: 'square',
+  portrait: 'portrait',
+  '4-3': '4-3',
+  '4x3': '4-3',
+  landscape43: '4-3',
+  '3-4': '3-4',
+  '3x4': '3-4',
+  portrait34: '3-4',
+  '9-16': '9-16',
+  '9x16': '9-16',
+  vertical916: '9-16',
   small: 'small',
   split: 'split',
 }
 
+const allowedInlineTags = new Set(['STRONG', 'EM', 'CODE', 'BR'])
+
+const fallbackSanitizeInlineHtml = (html: string) =>
+  html.replace(/<(?!\/?(strong|em|code|br)\b)[^>]*>/gi, '').replace(/\s(?:on\w+|style|href|src)=("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+
+const sanitizeInlineHtml = (html: string) => {
+  if (typeof document === 'undefined') return fallbackSanitizeInlineHtml(html)
+
+  const template = document.createElement('template')
+  template.innerHTML = html
+
+  const cleanNode = (node: Node) => {
+    Array.from(node.childNodes).forEach((child) => {
+      if (child.nodeType !== Node.ELEMENT_NODE) return
+      const element = child as HTMLElement
+      if (!allowedInlineTags.has(element.tagName)) {
+        element.replaceWith(document.createTextNode(element.textContent ?? ''))
+        return
+      }
+      Array.from(element.attributes).forEach((attribute) => element.removeAttribute(attribute.name))
+      cleanNode(element)
+    })
+  }
+
+  cleanNode(template.content)
+  return template.innerHTML
+}
+
 const inlineText = (value: string) =>
-  marked
-    .parseInline(value.trim(), { async: false })
-    .toString()
-    .replace(/\n/g, '')
+  sanitizeInlineHtml(
+    marked
+      .parseInline(value.trim(), { async: false })
+      .toString()
+      .replace(/\n/g, ''),
+  )
 
 const placeholderToImage = (line: string, autoIndex: number): { block: ContentBlock; nextIndex: number } | null => {
   const curly = line.match(/^\{\{(image[\w-]*)\}\}$/i)
@@ -21,10 +61,14 @@ const placeholderToImage = (line: string, autoIndex: number): { block: ContentBl
     return { block: { type: 'image', id: `image${autoIndex}`, variant: 'default' }, nextIndex: autoIndex + 1 }
   }
 
-  const bracket = line.match(/^\[image:\s*([\w-]+)\]$/i)
+  const bracket = line.match(/^\[image:\s*([\w-]+)(?:\s*\|\s*path:\s*([^|\]]+))?(?:\s*\|\s*id:\s*([\w-]+))?\]$/i)
   if (bracket) {
     const token = bracket[1].toLowerCase()
     const variant = imageVariantIds[token] ?? 'default'
+    const explicitId = bracket[3]?.trim()
+    if (explicitId) {
+      return { block: { type: 'image', id: explicitId, variant }, nextIndex: autoIndex }
+    }
     if (token === 'hero') {
       return { block: { type: 'image', id: 'hero', variant }, nextIndex: autoIndex }
     }

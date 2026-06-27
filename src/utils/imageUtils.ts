@@ -45,58 +45,54 @@ const readFileAsDataUrl = (file: File) =>
 
 export const recommendedAspect = (variant: ImageVariant) => {
   if (variant === 'hero') return '4 / 5'
-  if (variant === 'wide') return '16 / 9'
-  if (variant === 'square' || variant === 'split') return '1 / 1'
+  if (variant === 'wide') return '21 / 9'
+  if (variant === 'square') return '1 / 1'
+  if (variant === 'portrait') return '4 / 5'
+  if (variant === '4-3') return '4 / 3'
+  if (variant === '3-4') return '3 / 4'
+  if (variant === '9-16') return '9 / 16'
+  if (variant === 'split') return '3 / 4'
   if (variant === 'small') return '4 / 3'
   return '5 / 4'
 }
 
+export const createUploadedImage = async (file: File, id: string): Promise<UploadedImage> =>
+  new Promise<UploadedImage>((resolve) => {
+    const baseImage = {
+      id,
+      file,
+      name: file.name,
+      fit: 'cover' as const,
+      focalPoint: { x: 50, y: 50 },
+      filter: {
+        saturation: 0.86,
+        brightness: 1.04,
+        contrast: 0.94,
+        warmth: 0,
+      },
+    }
+    const img = new Image()
+    img.onload = () => {
+      resolve({
+        ...baseImage,
+        url: img.src,
+        aspectRatio: img.naturalWidth / img.naturalHeight,
+        luminance: getImageLuminance(img),
+      })
+    }
+    img.onerror = () =>
+      resolve({
+        ...baseImage,
+        url: img.src,
+      })
+    void readFileAsDataUrl(file)
+      .then((url) => {
+        img.src = url
+      })
+      .catch(() => {
+        img.src = URL.createObjectURL(file)
+      })
+  })
+
 export const createUploadedImages = async (files: File[]): Promise<UploadedImage[]> =>
-  Promise.all(
-    files.map(
-      (file, index) =>
-        new Promise<UploadedImage>((resolve) => {
-          const img = new Image()
-          img.onload = () => {
-            resolve({
-              id: index === 0 ? 'hero' : `image${index}`,
-              file,
-              url: img.src,
-              name: file.name,
-              aspectRatio: img.naturalWidth / img.naturalHeight,
-              luminance: getImageLuminance(img),
-              fit: 'cover',
-              focalPoint: { x: 50, y: 50 },
-              filter: {
-                saturation: 0.86,
-                brightness: 1.04,
-                contrast: 0.94,
-                warmth: 0,
-              },
-            })
-          }
-          img.onerror = () =>
-            resolve({
-              id: index === 0 ? 'hero' : `image${index}`,
-              file,
-              url: img.src,
-              name: file.name,
-              fit: 'cover',
-              focalPoint: { x: 50, y: 50 },
-              filter: {
-                saturation: 0.86,
-                brightness: 1.04,
-                contrast: 0.94,
-                warmth: 0,
-              },
-            })
-          void readFileAsDataUrl(file)
-            .then((url) => {
-              img.src = url
-            })
-            .catch(() => {
-              img.src = URL.createObjectURL(file)
-            })
-        }),
-    ),
-  )
+  Promise.all(files.map((file, index) => createUploadedImage(file, index === 0 ? 'hero' : `image${index}`)))

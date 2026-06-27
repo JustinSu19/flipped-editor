@@ -1,4 +1,14 @@
-export type ImageVariant = 'default' | 'hero' | 'wide' | 'square' | 'small' | 'split'
+export type ImageVariant =
+  | 'default'
+  | 'hero'
+  | 'wide'
+  | 'square'
+  | 'portrait'
+  | '4-3'
+  | '3-4'
+  | '9-16'
+  | 'small'
+  | 'split'
 export type TableAlign = 'left' | 'center' | 'right'
 
 export type ContentBlock =

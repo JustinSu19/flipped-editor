@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { BrandSignature } from './BrandSignature'
 import { Toolbar } from './Toolbar'
 
 type Props = {
@@ -16,7 +17,10 @@ export function AppShell({ editor, preview, inspector, toolbarActions, onFullscr
       <div className="workspace">
         <aside className="editor-panel">{editor}</aside>
         {preview}
-        <aside className="inspector-panel">{inspector}</aside>
+        <aside className="inspector-panel">
+          {inspector}
+          <BrandSignature />
+        </aside>
       </div>
     </main>
   )

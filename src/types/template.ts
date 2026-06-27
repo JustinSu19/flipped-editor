@@ -14,6 +14,8 @@ export type TemplateProps = {
   images: UploadedImage[]
   styleConfig: StyleConfig
   onImageChange?: (image: UploadedImage) => void
+  onImageUpload?: (id: string, file: File) => void
+  onImageDelete?: (id: string) => void
 }
 
 export type TemplateDefinition = {

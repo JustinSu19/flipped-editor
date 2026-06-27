@@ -183,8 +183,9 @@ button {
 }
 
 .inspector-panel {
+  position: relative;
   overflow: auto;
-  padding: 14px;
+  padding: 14px 14px 34px;
 }
 
 .editor-section {
@@ -239,6 +240,125 @@ button {
     linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 243, 237, 0.72)),
     rgba(255, 255, 255, 0.64);
   box-shadow: 0 8px 18px rgba(42, 38, 32, 0.045);
+}
+
+.markdown-guide-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  margin-left: 2px;
+  border: 1px solid rgba(112, 106, 94, 0.12);
+  border-radius: 8px;
+  color: rgba(48, 45, 40, 0.58);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 8px 18px rgba(42, 38, 32, 0.04);
+  transition:
+    transform 160ms ease,
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.markdown-guide-trigger:hover {
+  color: rgba(48, 45, 40, 0.82);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 24px rgba(42, 38, 32, 0.08);
+  transform: translateY(-1px);
+}
+
+.markdown-guide {
+  position: fixed;
+  z-index: 80;
+  width: 280px;
+  overflow: hidden;
+  border: 1px solid rgba(112, 106, 94, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 26px 70px rgba(42, 38, 32, 0.16);
+  backdrop-filter: blur(24px);
+}
+
+.markdown-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 42px;
+  padding: 0 10px 0 13px;
+  border-bottom: 1px solid rgba(112, 106, 94, 0.1);
+  color: #302d28;
+  background: rgba(250, 248, 243, 0.56);
+  cursor: grab;
+  user-select: none;
+}
+
+.markdown-guide-header:active {
+  cursor: grabbing;
+}
+
+.markdown-guide-header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.markdown-guide-header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 8px;
+  color: rgba(48, 45, 40, 0.56);
+  background: transparent;
+}
+
+.markdown-guide-header button:hover {
+  color: #302d28;
+  background: rgba(112, 106, 94, 0.08);
+}
+
+.markdown-guide-list {
+  display: grid;
+  gap: 1px;
+  max-height: min(520px, calc(100vh - 180px));
+  overflow: auto;
+  padding: 9px;
+}
+
+.markdown-guide-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(72px, 0.65fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 7px;
+  border-radius: 9px;
+}
+
+.markdown-guide-row:hover {
+  background: rgba(242, 238, 229, 0.72);
+}
+
+.markdown-guide-row code {
+  overflow: hidden;
+  color: #4a4236;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.markdown-guide-row span {
+  color: rgba(48, 45, 40, 0.54);
+  font-size: 11px;
+  text-align: right;
 }
 
 .markdown-actions {
@@ -298,6 +418,10 @@ button {
   background: #f2eee5;
 }
 
+.insert-image-file-input {
+  display: none;
+}
+
 .code-editor-shell {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
@@ -324,19 +448,59 @@ button {
   padding-right: 10px;
 }
 
+.editor-input-stack {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-highlight-layer,
 .editor-section textarea {
   width: 100%;
   height: 100%;
   min-height: 0;
+  padding: 13px 14px;
+  font-size: 13px;
+  line-height: 1.72;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.editor-highlight-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #3d3932;
+  pointer-events: none;
+  display: none;
+}
+
+.editor-image-token {
+  color: #76664a;
+  background: rgba(141, 125, 101, 0.13);
+  border: 1px solid rgba(141, 125, 101, 0.18);
+  border-radius: 5px;
+  padding: 1px 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.editor-section textarea {
+  position: relative;
+  z-index: 1;
   resize: none;
   overflow: auto;
-  padding: 13px 14px;
   border: 0;
   outline: none;
   color: #3d3932;
+  caret-color: #3d3932;
   background: transparent;
-  font-size: 13px;
-  line-height: 1.72;
+}
+
+.editor-section textarea::selection {
+  color: #3d3932;
+  background: rgba(141, 125, 101, 0.24);
 }
 
 .template-list {
@@ -785,6 +949,21 @@ button {
   flex: 0 0 auto;
   border: 1px solid rgba(112, 106, 94, 0.14);
   border-radius: 5px;
+}
+
+.brand-signature {
+  position: absolute;
+  right: 17px;
+  bottom: 10px;
+  z-index: 2;
+  margin: 0;
+  color: rgba(48, 45, 40, 0.28);
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .export-panel {

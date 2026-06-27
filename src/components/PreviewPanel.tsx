@@ -17,6 +17,8 @@ type Props = {
   previewMode: PreviewMode
   onPreviewModeChange: (mode: PreviewMode) => void
   onImageChange: (image: UploadedImage) => void
+  onImageUpload: (id: string, file: File) => void
+  onImageDelete: (id: string) => void
   scrollRef?: RefObject<HTMLDivElement | null>
   onScroll?: (element: HTMLDivElement) => void
 }
@@ -30,6 +32,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, Props>(function PreviewPa
     previewMode,
     onPreviewModeChange,
     onImageChange,
+    onImageUpload,
+    onImageDelete,
     scrollRef,
     onScroll,
   },
@@ -65,6 +69,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, Props>(function PreviewPa
               images={images}
               styleConfig={effectiveStyleConfig}
               onImageChange={onImageChange}
+              onImageUpload={onImageUpload}
+              onImageDelete={onImageDelete}
             />
           </div>
         ) : (

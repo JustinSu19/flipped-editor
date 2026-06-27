@@ -1,4 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
+import { RefreshCw, Trash2, UploadCloud } from 'lucide-react'
+import { useRef } from 'react'
 import type { ContentBlock, ImageVariant } from '../types/content'
 import type { UploadedImage } from '../types/image'
 import type { StyleConfig } from '../types/style'
@@ -72,6 +74,8 @@ export const ImageBlock = ({
   className = '',
   variant,
   onImageChange,
+  onImageUpload,
+  onImageDelete,
 }: {
   block: ContentBlock
   images: UploadedImage[]
@@ -79,13 +83,27 @@ export const ImageBlock = ({
   className?: string
   variant?: ImageVariant
   onImageChange?: (image: UploadedImage) => void
+  onImageUpload?: (id: string, file: File) => void
+  onImageDelete?: (id: string) => void
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
   const image = getImageByBlock(block, images)
   const currentVariant = block.type === 'image' ? block.variant : variant ?? 'default'
+  const imageId = block.type === 'image' ? block.id : 'hero'
   const radius = currentVariant === 'wide' ? Math.max(styleConfig.imageRadius - 8, 8) : styleConfig.imageRadius
   const focalPoint = image?.focalPoint ?? { x: 50, y: 50 }
 
+  const openFilePicker = () => inputRef.current?.click()
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !file.type.startsWith('image/')) return
+    onImageUpload?.(imageId, file)
+  }
+
   const startImageDrag = (event: React.PointerEvent<HTMLElement>) => {
+    if ((event.target as HTMLElement).closest('button,input')) return
     if (!image || !onImageChange || image.fit !== 'cover') return
     event.preventDefault()
     const target = event.currentTarget
@@ -122,25 +140,59 @@ export const ImageBlock = ({
   return (
     <figure
       className={`article-image ${image ? 'adjustable-image' : ''} ${className}`}
+      onClick={() => {
+        if (!image && onImageUpload) openFilePicker()
+      }}
       onPointerDown={startImageDrag}
       style={{
         aspectRatio: recommendedAspect(currentVariant),
         borderRadius: radius,
       }}
     >
+      <input ref={inputRef} type="file" accept="image/*" className="image-block-input" onChange={handleFileChange} />
       {image ? (
-        <img
-          src={image.url}
-          alt={image.name}
-          style={{
-            objectFit: image.fit,
-            objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
-            filter: imageFilter(image, styleConfig.imageFilterStrength),
-          }}
-        />
+        <>
+          <img
+            src={image.url}
+            alt={image.name}
+            style={{
+              objectFit: image.fit,
+              objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
+              filter: imageFilter(image, styleConfig.imageFilterStrength),
+            }}
+          />
+          <div className="image-inline-actions">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                openFilePicker()
+              }}
+            >
+              <RefreshCw size={13} />
+              替换
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onImageDelete?.(imageId)
+              }}
+            >
+              <Trash2 size={13} />
+              删除
+            </button>
+          </div>
+        </>
       ) : (
         <div className="image-placeholder">
           <span>{currentVariant}</span>
+          {onImageUpload && (
+            <button type="button" className="image-upload-cta">
+              <UploadCloud size={15} />
+              上传图片
+            </button>
+          )}
         </div>
       )}
     </figure>

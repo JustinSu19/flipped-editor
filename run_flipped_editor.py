@@ -15,7 +15,7 @@ PORT = 5173
 URL = f"http://{LOCAL_HOST}:{PORT}"
 VERSION_URL = f"{URL}/flipped-editor-version.json"
 EXPECTED_APP = "flipped-editor"
-EXPECTED_VERSION = "v2.2-previewstyle"
+EXPECTED_VERSION = "v2.3-inlineimage"
 
 
 def fetch_text(url: str, timeout: float = 1.2) -> str | None:

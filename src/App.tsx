@@ -2,50 +2,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { DecorTextPanel } from './components/DecorTextPanel'
 import { ExportPanel } from './components/ExportPanel'
-import { ImageUploader } from './components/ImageUploader'
 import { MarkdownEditor } from './components/MarkdownEditor'
-import { PreviewPanel } from './components/PreviewPanel'
-import type { PreviewMode } from './components/PreviewPanel'
+import { PreviewPanel, type PreviewMode } from './components/PreviewPanel'
 import { StylePanel } from './components/StylePanel'
 import { TemplateSelector } from './components/TemplateSelector'
+import { sampleMarkdown } from './data/sampleMarkdown'
 import type { UploadedImage } from './types/image'
 import { defaultStyleConfig, type StyleConfig } from './types/style'
 import type { TemplateId } from './types/template'
 import { copyArticleRichText } from './utils/exportHtml'
 import { downloadArticlePng } from './utils/exportImage'
+import { createUploadedImage } from './utils/imageUtils'
 import { parseMarkdown } from './utils/parseMarkdown'
 import { loadState, saveState } from './utils/storage'
-
-const sampleMarkdown = `# 生命的浓度
-
-[image: hero]
-
-## 年轮的轨迹
-
-在岁月的画卷上，每一棵树都默默记录着自己的故事。
-它们并不急着解释什么，只是让风穿过，让雨停留，让时间在枝叶之间慢慢沉积。
-
-{{image}}
-
-## 风的轻吻
-
-大树在风的轻吻中舒展着枝叶，仿佛每一片叶子都在回应这温柔的触碰。
-
-[image: square]
-
-> 一棵树，也是一段时间。
-> 它站在那里，把沉默变成了年轮。
-
----
-
-### 城市慢行
-
-- 雨后的人行道有浅浅的光
-- 树影落在玻璃窗上
-- 黄昏让建筑变得柔和
-
-我在街角停了一会儿，忽然觉得生活并不总是需要抵达。
-有时，只要认真经过，就已经足够。`
 
 const validTemplateIds: TemplateId[] = ['nature-magazine', 'image-essay', 'poetic-minimal', 'chapter-cards']
 
@@ -98,6 +67,27 @@ function App() {
 
   const articleNode = () => articleRef.current?.querySelector('article') as HTMLElement | null
 
+  const upsertImage = (nextImage: UploadedImage) => {
+    setImages((currentImages) => {
+      const exists = currentImages.some((image) => image.id === nextImage.id)
+      if (exists) return currentImages.map((image) => (image.id === nextImage.id ? nextImage : image))
+      return [...currentImages, nextImage]
+    })
+  }
+
+  const uploadImageForId = async (id: string, file: File) => {
+    const nextImage = await createUploadedImage(file, id)
+    upsertImage(nextImage)
+    return nextImage
+  }
+
+  const uploadInlineImage = async (variant: string, file: File) => {
+    const id = `img-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+    const image = await uploadImageForId(id, file)
+    const safeName = image.name.replace(/[|\]\n\r]/g, ' ').trim() || 'local-image'
+    return `[image: ${variant} | path: ${safeName} | id: ${id}]`
+  }
+
   const copyRichText = async () => {
     const node = articleNode()
     if (!node) return
@@ -140,6 +130,7 @@ function App() {
           ref={editorScrollRef}
           value={markdown}
           onChange={setMarkdown}
+          onInsertImageUpload={uploadInlineImage}
         />
       }
       preview={
@@ -153,11 +144,9 @@ function App() {
           previewMode={previewMode}
           onPreviewModeChange={setPreviewMode}
           onScroll={(element) => syncScroll(element, editorScrollRef.current, 'preview')}
-          onImageChange={(nextImage) =>
-            setImages((currentImages) =>
-              currentImages.map((image) => (image.url === nextImage.url ? nextImage : image)),
-            )
-          }
+          onImageChange={(nextImage) => upsertImage(nextImage)}
+          onImageUpload={(id, file) => void uploadImageForId(id, file)}
+          onImageDelete={(id) => setImages((currentImages) => currentImages.filter((image) => image.id !== id))}
         />
       }
       inspector={
@@ -167,7 +156,6 @@ function App() {
             value={styleConfig.decorText}
             onChange={(decorText) => setStyleConfig((current) => ({ ...current, decorText }))}
           />
-          <ImageUploader images={images} onChange={setImages} />
           <StylePanel
             value={styleConfig}
             previewMode={previewMode}

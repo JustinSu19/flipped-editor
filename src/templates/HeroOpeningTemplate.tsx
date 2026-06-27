@@ -5,7 +5,14 @@ import { Decor, ImageBlock, articleStyle, overlayTextColor, renderTextBlock } fr
 
 const fixedHeroBlock: ContentBlock = { type: 'image', id: 'hero', variant: 'hero' }
 
-export function HeroOpeningTemplate({ blocks, images, styleConfig, onImageChange }: TemplateProps) {
+export function HeroOpeningTemplate({
+  blocks,
+  images,
+  styleConfig,
+  onImageChange,
+  onImageUpload,
+  onImageDelete,
+}: TemplateProps) {
   const heroIndex = blocks.findIndex((block) => block.type === 'image' && block.variant === 'hero')
   const titleBlock = blocks.find((block) => block.type === 'h1')
   const heroBlock = heroIndex >= 0 ? blocks[heroIndex] : fixedHeroBlock
@@ -15,7 +22,15 @@ export function HeroOpeningTemplate({ blocks, images, styleConfig, onImageChange
   return (
     <article className="article-canvas hero-opening-template" style={articleStyle(styleConfig)}>
       <section className="hero-opening has-image">
-        <ImageBlock block={heroBlock} images={images} styleConfig={styleConfig} className="hero-tall" onImageChange={onImageChange} />
+        <ImageBlock
+          block={heroBlock}
+          images={images}
+          styleConfig={styleConfig}
+          className="hero-tall"
+          onImageChange={onImageChange}
+          onImageUpload={onImageUpload}
+          onImageDelete={onImageDelete}
+        />
         <div className="hero-opening-title" style={{ color: heroTitleColor }}>
           <Decor>{styleConfig.decorText}</Decor>
           {titleBlock?.type === 'h1' && <h1 dangerouslySetInnerHTML={{ __html: titleBlock.text }} />}
@@ -24,7 +39,18 @@ export function HeroOpeningTemplate({ blocks, images, styleConfig, onImageChange
       <div className="article-body narrow">
         {blocks.map((block, index) => {
           if (index === heroIndex || block.type === 'h1') return null
-          if (block.type === 'image') return <ImageBlock key={index} block={block} images={images} styleConfig={styleConfig} onImageChange={onImageChange} />
+          if (block.type === 'image')
+            return (
+              <ImageBlock
+                key={index}
+                block={block}
+                images={images}
+                styleConfig={styleConfig}
+                onImageChange={onImageChange}
+                onImageUpload={onImageUpload}
+                onImageDelete={onImageDelete}
+              />
+            )
           return renderTextBlock(block, styleConfig, index)
         })}
       </div>
