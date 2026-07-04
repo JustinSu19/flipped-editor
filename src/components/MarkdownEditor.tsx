@@ -60,7 +60,7 @@ const tableTemplate = `| 维度 | 内容 | 备注 |
 const accentOptions = [
   { name: '黑色', value: '#26231f' },
   { name: '朱砂', value: '#9f3f2f' },
-  { name: '松绿', value: '#2f6654' },
+  { name: '暖橙', value: '#c46f2f' },
   { name: '靛蓝', value: '#335c8a' },
   { name: '藤紫', value: '#6b527f' },
 ]
