@@ -1218,6 +1218,209 @@ button {
   gap: 8px;
 }
 
+.copy-menu {
+  position: relative;
+}
+
+.copy-menu-trigger {
+  min-width: 116px;
+}
+
+.copy-chevron {
+  margin-left: -2px;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.copy-chevron.open {
+  transform: rotate(180deg);
+}
+
+.copy-menu-popover {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: 6px;
+  width: 254px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 248, 244, 0.9)),
+    rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 28px 70px rgba(36, 39, 58, 0.2),
+    0 8px 22px rgba(48, 45, 40, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(34px) saturate(1.26);
+  transform-origin: top right;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate3d(0, -8px, 0) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 220ms ease,
+    filter 220ms ease,
+    transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.copy-menu-popover.open {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0) scale(1);
+  pointer-events: auto;
+}
+
+.copy-menu-popover.closing {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate3d(0, -8px, 0) scale(0.96);
+  pointer-events: none;
+}
+
+.copy-menu-popover button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 54px;
+  padding: 7px 9px 7px 7px;
+  border: 0;
+  border-radius: 12px;
+  color: #302d28;
+  background: rgba(255, 255, 255, 0.44);
+  text-align: left;
+  transition:
+    background 180ms ease,
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 180ms ease;
+}
+
+.copy-menu-popover button:hover,
+.copy-menu-popover button:focus-visible {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 10px 22px rgba(48, 45, 40, 0.08),
+    inset 0 0 0 1px rgba(112, 106, 94, 0.08);
+  transform: translateY(-1px);
+}
+
+.copy-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+}
+
+.copy-option-icon.text {
+  color: #5a5044;
+  background: rgba(141, 125, 101, 0.13);
+}
+
+.copy-option-icon.global {
+  color: #5d4c86;
+  background:
+    linear-gradient(135deg, rgba(135, 204, 255, 0.22), rgba(210, 150, 255, 0.22)),
+    rgba(255, 255, 255, 0.32);
+}
+
+.copy-menu-popover b,
+.copy-menu-popover small {
+  display: block;
+  min-width: 0;
+}
+
+.copy-menu-popover b {
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.25;
+}
+
+.copy-menu-popover small {
+  margin-top: 3px;
+  color: rgba(48, 45, 40, 0.58);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  top: 92px;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  min-width: 286px;
+  max-width: min(360px, calc(100vw - 36px));
+  padding: 13px 16px 13px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  color: #302d28;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(248, 246, 242, 0.48)),
+    rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 30px 78px rgba(33, 35, 52, 0.16),
+    0 8px 20px rgba(48, 45, 40, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(28px) saturate(1.35);
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate(-50%, -8px) scale(0.98);
+  transition:
+    opacity 260ms ease,
+    filter 260ms ease,
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.copy-toast.visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(-50%, 0) scale(1);
+}
+
+.copy-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 13px;
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(57, 201, 121, 0.95), rgba(37, 151, 91, 0.95)),
+    #25975b;
+  box-shadow:
+    0 12px 24px rgba(37, 151, 91, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.copy-toast b,
+.copy-toast small {
+  display: block;
+  min-width: 0;
+}
+
+.copy-toast b {
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.3;
+}
+
+.copy-toast small {
+  margin-top: 2px;
+  color: rgba(48, 45, 40, 0.56);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .primary-button,
 .secondary-button {
   display: inline-flex;

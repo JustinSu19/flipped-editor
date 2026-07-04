@@ -209,6 +209,17 @@ const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement)
   }
 }
 
+const removeImagesForTextStyleCopy = (clone: HTMLElement) => {
+  clone.querySelectorAll('figure.article-image, img, .image-placeholder').forEach((node) => node.remove())
+
+  const natureHero = clone.querySelector<HTMLElement>('.nature-hero')
+  const natureTitle = clone.querySelector<HTMLElement>('.nature-title')
+  if (natureHero && natureTitle) {
+    resetFlowTitle(natureTitle)
+    natureHero.replaceWith(natureTitle)
+  }
+}
+
 const createCopyParagraph = (html: string, style: Partial<CSSStyleDeclaration>) => {
   const paragraph = document.createElement('p')
   paragraph.innerHTML = html
@@ -577,6 +588,14 @@ const getRichTextArticleClone = async (node: HTMLElement) => {
   return clone
 }
 
+const getTextStyleArticleClone = (node: HTMLElement) => {
+  const clone = cloneWithInlineStyles(node)
+  removeImagesForTextStyleCopy(clone)
+  normalizeCopyStructure(clone)
+  normalizeRichTextStyles(clone)
+  return clone
+}
+
 const writeRichClipboard = async (html: string, text: string) => {
   if ('ClipboardItem' in window && navigator.clipboard?.write) {
     await navigator.clipboard.write([
@@ -615,6 +634,13 @@ export const copyArticleHtml = async (node: HTMLElement) => {
 
 export const copyArticleRichText = async (node: HTMLElement) => {
   const clone = await getRichTextArticleClone(node)
+  const html = clone.outerHTML
+  const text = clone.innerText
+  await writeRichClipboard(html, text)
+}
+
+export const copyArticleTextStyle = async (node: HTMLElement) => {
+  const clone = getTextStyleArticleClone(node)
   const html = clone.outerHTML
   const text = clone.innerText
   await writeRichClipboard(html, text)
