@@ -104,6 +104,7 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
   const blocks: ContentBlock[] = []
   let paragraph: string[] = []
+  let paragraphIndent: 0 | 1 = 0
   let list: string[] = []
   let listOrdered = false
   let listStart = 1
@@ -113,8 +114,9 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
 
   const flushParagraph = () => {
     if (paragraph.length) {
-      blocks.push({ type: 'paragraph', text: paragraph.map(inlineText).join('<br />') })
+      blocks.push({ type: 'paragraph', text: paragraph.map(inlineText).join('<br />'), indent: paragraphIndent })
       paragraph = []
+      paragraphIndent = 0
     }
   }
 
@@ -149,7 +151,8 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
 
   let index = 0
   while (index < lines.length) {
-    const line = lines[index].trim()
+    const rawLine = lines[index]
+    const line = rawLine.trim()
 
     if (!line) {
       flushAll()
@@ -169,6 +172,31 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
         index += 1
       }
       blocks.push({ type: 'table', headers, rows, align })
+      continue
+    }
+
+    if (/^<aside(?:\s[^>]*)?>/i.test(line)) {
+      flushAll()
+      const calloutLines: string[] = []
+      let current = line.replace(/^<aside(?:\s[^>]*)?>/i, '')
+
+      while (index < lines.length) {
+        const closeIndex = current.search(/<\/aside>/i)
+        if (closeIndex >= 0) {
+          const beforeClose = current.slice(0, closeIndex).trim()
+          if (beforeClose) calloutLines.push(beforeClose)
+          index += 1
+          break
+        }
+
+        if (current.trim()) calloutLines.push(current.trim())
+        index += 1
+        current = lines[index] ?? ''
+      }
+
+      if (calloutLines.length) {
+        blocks.push({ type: 'callout', text: calloutLines.map(inlineText).join('<br />') })
+      }
       continue
     }
 
@@ -222,23 +250,29 @@ export const parseMarkdown = (markdown: string): ContentBlock[] => {
       continue
     }
 
-    const orderedListItem = line.match(/^(\d+)[.)]\s+(.+)$/)
+    const orderedListItem = lines[index].match(/^(\s{0,4}|\t)(\d+)[.)]\s+(.+)$/)
     if (orderedListItem) {
       flushParagraph()
       flushQuote()
-      if (list.length && !listOrdered) flushList()
+      const depth = orderedListItem[1].length > 0 ? 1 : 0
+      if (list.length && (!listOrdered || listDepth !== depth)) flushList()
       if (!list.length) {
         listOrdered = true
-        listStart = Number(orderedListItem[1])
+        listStart = Number(orderedListItem[2])
+        listDepth = depth
       }
-      list.push(orderedListItem[2])
+      list.push(orderedListItem[3])
       index += 1
       continue
     }
 
     flushList()
     flushQuote()
-    paragraph.push(line)
+    const indentedParagraph = rawLine.match(/^(?: {2,}|\t)(\S.*)$/)
+    const nextParagraphIndent: 0 | 1 = indentedParagraph ? 1 : 0
+    if (paragraph.length && paragraphIndent !== nextParagraphIndent) flushParagraph()
+    paragraphIndent = nextParagraphIndent
+    paragraph.push(indentedParagraph?.[1] ?? line)
     index += 1
   }
 

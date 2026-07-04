@@ -45,7 +45,7 @@ export function PoeticMinimalTemplate({
             return (
               <p
                 key={index}
-                className="article-p poetic-line"
+                className={block.indent ? 'article-p article-p-indent poetic-line' : 'article-p poetic-line'}
                 style={{ marginBottom: spacing(styleConfig, styleConfig.paragraphSpacing + 18) }}
                 dangerouslySetInnerHTML={{ __html: block.text }}
               />

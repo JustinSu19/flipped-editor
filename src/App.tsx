@@ -151,6 +151,8 @@ function App() {
           value={markdown}
           onChange={updateMarkdown}
           onInsertImageUpload={uploadInlineImage}
+          styleConfig={styleConfig}
+          onStyleChange={setStyleConfig}
         />
       }
       preview={

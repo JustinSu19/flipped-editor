@@ -234,6 +234,13 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
     })
   })
 
+  clone.querySelectorAll<HTMLElement>('.article-p-indent').forEach((element) => {
+    setStyles(element, {
+      marginLeft: '26px',
+      color: 'rgb(112, 107, 98)',
+    })
+  })
+
   clone.querySelectorAll<HTMLElement>('.article-quote').forEach((element) => {
     setStyles(element, {
       margin: '28px 0',
@@ -243,6 +250,27 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
       color: 'rgb(104, 99, 90)',
       background: 'transparent',
       textAlign: 'left',
+    })
+  })
+
+  clone.querySelectorAll<HTMLElement>('.article-callout').forEach((element) => {
+    setStyles(element, {
+      margin: '28px 0 30px',
+      padding: '15px 16px 15px 18px',
+      border: '1px solid rgba(80, 76, 68, 0.14)',
+      borderRadius: '12px',
+      color: 'rgb(94, 89, 80)',
+      background: 'rgba(250, 247, 240, 0.56)',
+      textAlign: 'left',
+    })
+  })
+
+  clone.querySelectorAll<HTMLElement>('.article-callout p').forEach((element) => {
+    setStyles(element, {
+      margin: '0',
+      color: 'rgb(94, 89, 80)',
+      fontSize: bodyFontSize,
+      lineHeight: '1.9',
     })
   })
 
