@@ -13,6 +13,8 @@ type ArticleCssVars = React.CSSProperties & {
   '--article-muted-color': string
   '--article-soft-color': string
   '--article-strong-color': string
+  '--article-accent-color': string
+  '--article-accent-soft-color': string
   '--article-line-color': string
 }
 
@@ -56,6 +58,8 @@ export const articleStyle = (styleConfig: StyleConfig): ArticleCssVars => ({
   '--article-muted-color': styleConfig.textColor,
   '--article-soft-color': colorMix(styleConfig.textColor, 0.72),
   '--article-strong-color': colorMix(styleConfig.titleColor, 0.94),
+  '--article-accent-color': styleConfig.accentColor,
+  '--article-accent-soft-color': colorMix(styleConfig.accentColor, 0.18),
   '--article-line-color': colorMix(styleConfig.textColor, 0.18),
 })
 
@@ -231,7 +235,7 @@ export const renderTextBlock = (block: ContentBlock, styleConfig: StyleConfig, i
     return (
       <p
         key={index}
-        className="article-p"
+        className={block.indent ? 'article-p article-p-indent' : 'article-p'}
         style={{ marginBottom: spacing(styleConfig, styleConfig.paragraphSpacing) }}
         dangerouslySetInnerHTML={{ __html: block.text }}
       />
@@ -242,6 +246,13 @@ export const renderTextBlock = (block: ContentBlock, styleConfig: StyleConfig, i
       <blockquote key={index} className="article-quote">
         <p dangerouslySetInnerHTML={{ __html: block.text }} />
       </blockquote>
+    )
+  }
+  if (block.type === 'callout') {
+    return (
+      <aside key={index} className="article-callout">
+        <p dangerouslySetInnerHTML={{ __html: block.text }} />
+      </aside>
     )
   }
   if (block.type === 'list') {

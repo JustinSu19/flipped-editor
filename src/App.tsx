@@ -11,7 +11,7 @@ import type { UploadedImage } from './types/image'
 import { defaultStyleConfig, type StyleConfig } from './types/style'
 import type { TemplateId } from './types/template'
 import { trackEvent } from './utils/analytics'
-import { copyArticleRichText } from './utils/exportHtml'
+import { copyArticleRichText, copyArticleTextStyle } from './utils/exportHtml'
 import { downloadArticlePng } from './utils/exportImage'
 import { createUploadedImage } from './utils/imageUtils'
 import { parseMarkdown } from './utils/parseMarkdown'
@@ -106,11 +106,15 @@ function App() {
     return `[image: ${variant} | path: ${safeName} | id: ${id}]`
   }
 
-  const copyRichText = async () => {
+  const copyRichText = async (mode: 'text-style' | 'global-style') => {
     const node = articleNode()
     if (!node) return
-    trackEvent('copy_to_wechat')
-    await copyArticleRichText(node)
+    trackEvent('copy_to_wechat', { mode })
+    if (mode === 'text-style') {
+      await copyArticleTextStyle(node)
+    } else {
+      await copyArticleRichText(node)
+    }
     setRichCopied(true)
     window.setTimeout(() => setRichCopied(false), 1400)
   }
@@ -151,6 +155,8 @@ function App() {
           value={markdown}
           onChange={updateMarkdown}
           onInsertImageUpload={uploadInlineImage}
+          styleConfig={styleConfig}
+          onStyleChange={setStyleConfig}
         />
       }
       preview={
@@ -189,7 +195,7 @@ function App() {
           richCopied={richCopied}
           exportingPng={exportingPng}
           pngError={pngError}
-          onCopyRichText={() => void copyRichText()}
+          onCopyRichText={copyRichText}
           onDownloadPng={() => void exportPng()}
         />
       }

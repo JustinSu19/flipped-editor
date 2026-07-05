@@ -5,6 +5,7 @@ export type StyleConfig = {
   paperColor: string
   textColor: string
   titleColor: string
+  accentColor: string
   fontSize: number
   lineHeight: number
   paragraphSpacing: number
@@ -23,6 +24,7 @@ export const defaultStyleConfig: StyleConfig = {
   paperColor: '#f8f1dc',
   textColor: '#665f50',
   titleColor: '#3f392f',
+  accentColor: '#26231f',
   fontSize: 14,
   lineHeight: 1.9,
   paragraphSpacing: 20,

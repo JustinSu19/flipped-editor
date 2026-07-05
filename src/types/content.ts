@@ -15,8 +15,9 @@ export type ContentBlock =
   | { type: 'h1'; text: string }
   | { type: 'h2'; text: string }
   | { type: 'h3'; text: string }
-  | { type: 'paragraph'; text: string }
+  | { type: 'paragraph'; text: string; indent?: 0 | 1 }
   | { type: 'quote'; text: string }
+  | { type: 'callout'; text: string }
   | { type: 'list'; items: string[]; ordered?: boolean; start?: number; depth?: 0 | 1 }
   | { type: 'table'; headers: string[]; rows: string[][]; align: TableAlign[] }
   | { type: 'divider' }
