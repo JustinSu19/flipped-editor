@@ -36,6 +36,7 @@ function App() {
   const [exportingPng, setExportingPng] = useState(false)
   const [pngError, setPngError] = useState('')
   const articleRef = useRef<HTMLDivElement>(null)
+  const previewPanelRef = useRef<HTMLDivElement>(null)
   const editorScrollRef = useRef<HTMLTextAreaElement>(null)
   const previewScrollRef = useRef<HTMLDivElement>(null)
   const scrollOwnerRef = useRef<'editor' | 'preview' | null>(null)
@@ -138,7 +139,7 @@ function App() {
   }
 
   const fullscreenPreview = async () => {
-    const node = articleRef.current
+    const node = previewPanelRef.current
     if (!node) return
     if (document.fullscreenElement) {
       await document.exitFullscreen()
@@ -161,7 +162,8 @@ function App() {
       }
       preview={
         <PreviewPanel
-          ref={articleRef}
+          ref={previewPanelRef}
+          articleRef={articleRef}
           scrollRef={previewScrollRef}
           blocks={blocks}
           images={images}

@@ -6,6 +6,7 @@ export type UploadedImage = {
   aspectRatio?: number
   luminance?: number
   fit: 'cover' | 'contain'
+  fullBleed?: boolean
   focalPoint?: {
     x: number
     y: number

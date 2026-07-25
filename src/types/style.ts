@@ -1,6 +1,7 @@
 export type StyleConfig = {
   articleWidth: number
   pageMargin: number
+  wechatPageMargin: number
   backgroundColor: string
   paperColor: string
   textColor: string
@@ -13,6 +14,7 @@ export type StyleConfig = {
   imageRadius: number
   imageFilterStrength: number
   whitespaceLevel: 'compact' | 'balanced' | 'airy'
+  textAlign: 'left' | 'center' | 'right'
   fontFamily: 'songti' | 'fangsong' | 'serif' | 'yahei'
   decorText: string
 }
@@ -20,10 +22,11 @@ export type StyleConfig = {
 export const defaultStyleConfig: StyleConfig = {
   articleWidth: 390,
   pageMargin: 43,
-  backgroundColor: '#f5f5f2',
-  paperColor: '#f8f1dc',
-  textColor: '#665f50',
-  titleColor: '#3f392f',
+  wechatPageMargin: 22,
+  backgroundColor: '#f6f6f4',
+  paperColor: '#ffffff',
+  textColor: '#625a4a',
+  titleColor: '#3b3429',
   accentColor: '#26231f',
   fontSize: 14,
   lineHeight: 1.9,
@@ -32,6 +35,7 @@ export const defaultStyleConfig: StyleConfig = {
   imageRadius: 18,
   imageFilterStrength: 0.8,
   whitespaceLevel: 'balanced',
-  fontFamily: 'songti',
+  textAlign: 'left',
+  fontFamily: 'serif',
   decorText: '知古青年/ ZhiGu QingNian',
 }
