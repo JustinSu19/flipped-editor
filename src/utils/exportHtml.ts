@@ -45,7 +45,11 @@ const inlineProperties = [
 ]
 
 const COPY_SIDE_INSET = 22
-const copySideInset = `${COPY_SIDE_INSET}px`
+
+const resolveCopySideInset = (node: HTMLElement) => {
+  const configured = Number.parseFloat(window.getComputedStyle(node).getPropertyValue('--article-page-margin'))
+  return Math.max(COPY_SIDE_INSET, Number.isFinite(configured) ? configured : COPY_SIDE_INSET)
+}
 
 const cloneWithInlineStyles = (node: HTMLElement) => {
   const clone = node.cloneNode(true) as HTMLElement
@@ -63,15 +67,16 @@ const cloneWithInlineStyles = (node: HTMLElement) => {
   return clone
 }
 
-const resetFlowTitle = (element: HTMLElement) => {
+const resetFlowTitle = (element: HTMLElement, sideInset = COPY_SIDE_INSET) => {
+  const inset = `${sideInset}px`
   element.style.position = 'static'
   element.style.left = 'auto'
   element.style.right = 'auto'
   element.style.bottom = 'auto'
   element.style.textShadow = 'none'
-  element.style.padding = '0 22px 34px'
-  element.style.paddingLeft = '22px'
-  element.style.paddingRight = '22px'
+  element.style.padding = `0 ${inset} 34px`
+  element.style.paddingLeft = inset
+  element.style.paddingRight = inset
   element.style.margin = '0'
   element.style.boxSizing = 'border-box'
 }
@@ -155,7 +160,8 @@ const renderCroppedImage = async (sourceFigure: HTMLElement, sourceImage: HTMLIm
   return canvas.toDataURL('image/png')
 }
 
-const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement) => {
+const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement, sideInset: number) => {
+  const copySideInset = `${sideInset}px`
   clone.querySelectorAll('.image-inline-actions, .image-block-input, .image-upload-cta').forEach((node) => node.remove())
   const sourceFigures = Array.from(source.querySelectorAll<HTMLElement>('figure.article-image'))
   const cloneFigures = Array.from(clone.querySelectorAll<HTMLElement>('figure.article-image'))
@@ -174,6 +180,8 @@ const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement)
       }
 
       const isHeroImage = Boolean(figure.closest('.nature-hero, .hero-opening'))
+      const isUserFullBleed = Boolean(sourceFigure?.classList.contains('image-user-full-bleed'))
+      const isCardFullBleed = isUserFullBleed && Boolean(sourceFigure?.closest('.chapter-card'))
       const sourceParent = sourceFigure?.parentElement
       const sourceRect = sourceFigure?.getBoundingClientRect()
       const parentRect = sourceParent?.getBoundingClientRect()
@@ -181,12 +189,37 @@ const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement)
         sourceRect && parentRect && parentRect.width > 0 ? Math.min(100, Math.max(1, (sourceRect.width / parentRect.width) * 100)) : 100
 
       figure.style.setProperty('display', 'block')
-      figure.style.setProperty('margin', isHeroImage ? '0' : widthPercent < 92 ? '28px auto' : `28px ${copySideInset}`)
+      figure.style.setProperty(
+        'margin',
+        isHeroImage
+          ? '0'
+          : isCardFullBleed
+            ? `28px -${sideInset}px`
+            : isUserFullBleed
+              ? '28px 0'
+              : widthPercent < 92
+                ? '28px auto'
+                : `28px ${copySideInset}`,
+      )
       figure.style.setProperty('padding', '0')
-      figure.style.setProperty('width', isHeroImage ? '100%' : widthPercent < 92 ? `${widthPercent.toFixed(2)}%` : 'auto')
-      figure.style.setProperty('max-width', isHeroImage ? '100%' : `calc(100% - ${COPY_SIDE_INSET * 2}px)`)
+      figure.style.setProperty(
+        'width',
+        isCardFullBleed
+          ? 'auto'
+          : isHeroImage || isUserFullBleed
+            ? '100%'
+            : widthPercent < 92
+              ? `${widthPercent.toFixed(2)}%`
+              : 'auto',
+      )
+      figure.style.setProperty(
+        'max-width',
+        isCardFullBleed ? 'none' : isHeroImage || isUserFullBleed ? '100%' : `calc(100% - ${sideInset * 2}px)`,
+      )
       figure.style.setProperty('height', 'auto')
       figure.style.setProperty('line-height', '0')
+      figure.style.setProperty('font-size', '0')
+      figure.style.setProperty('vertical-align', 'top')
       figure.style.setProperty('overflow', 'hidden')
       figure.style.setProperty('background', 'transparent')
       figure.style.setProperty('box-sizing', 'border-box')
@@ -204,18 +237,30 @@ const prepareImagesForRichText = async (source: HTMLElement, clone: HTMLElement)
   const natureHero = clone.querySelector<HTMLElement>('.nature-hero')
   const natureTitle = clone.querySelector<HTMLElement>('.nature-title')
   if (natureHero && natureTitle && !natureHero.querySelector('img')) {
-    resetFlowTitle(natureTitle)
+    resetFlowTitle(natureTitle, sideInset)
     natureHero.replaceWith(natureTitle)
   }
+
+  clone.querySelectorAll<HTMLElement>('.nature-hero, .hero-opening').forEach((hero) => {
+    setStyles(hero, {
+      margin: '0',
+      padding: '0',
+      border: '0',
+      fontSize: '0',
+      lineHeight: '0',
+      background: 'transparent',
+      backgroundColor: 'transparent',
+    })
+  })
 }
 
-const removeImagesForTextStyleCopy = (clone: HTMLElement) => {
+const removeImagesForTextStyleCopy = (clone: HTMLElement, sideInset: number) => {
   clone.querySelectorAll('figure.article-image, img, .image-placeholder').forEach((node) => node.remove())
 
   const natureHero = clone.querySelector<HTMLElement>('.nature-hero')
   const natureTitle = clone.querySelector<HTMLElement>('.nature-title')
   if (natureHero && natureTitle) {
-    resetFlowTitle(natureTitle)
+    resetFlowTitle(natureTitle, sideInset)
     natureHero.replaceWith(natureTitle)
   }
 }
@@ -227,7 +272,8 @@ const createCopyParagraph = (html: string, style: Partial<CSSStyleDeclaration>) 
   return paragraph
 }
 
-const normalizeCopyStructure = (clone: HTMLElement) => {
+const normalizeCopyStructure = (clone: HTMLElement, sideInset: number) => {
+  const copySideInset = `${sideInset}px`
   const bodyFontSize = clone.style.fontSize || '15px'
   clone.querySelectorAll<HTMLElement>('.article-list').forEach((list) => {
     const fragment = document.createDocumentFragment()
@@ -244,7 +290,7 @@ const normalizeCopyStructure = (clone: HTMLElement) => {
       fragment.appendChild(
         createCopyParagraph(`${marker}${item.innerHTML}`, {
           margin: index === 0 ? firstMargin : '0 0 8px',
-          marginLeft: depth === 1 ? `${COPY_SIDE_INSET + 24}px` : copySideInset,
+          marginLeft: depth === 1 ? `${sideInset + 24}px` : copySideInset,
           marginRight: copySideInset,
           padding: `0 0 0 ${indentSize}`,
           textIndent: `-${indentSize}`,
@@ -280,7 +326,8 @@ const setStyles = (element: HTMLElement, styles: Partial<CSSStyleDeclaration>) =
   })
 }
 
-const normalizeRichTextStyles = (clone: HTMLElement) => {
+const normalizeRichTextStyles = (clone: HTMLElement, sideInset: number) => {
+  const copySideInset = `${sideInset}px`
   const bodyFontSize = clone.style.fontSize || '15px'
   setStyles(clone, {
     width: '100%',
@@ -313,7 +360,7 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
   })
 
   clone.querySelectorAll<HTMLElement>('.nature-title, .hero-opening-title').forEach((element) => {
-    resetFlowTitle(element)
+    resetFlowTitle(element, sideInset)
     setStyles(element, {
       color: 'rgb(63, 61, 56)',
       background: 'transparent',
@@ -394,14 +441,18 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
   })
 
   clone.querySelectorAll<HTMLElement>('.article-p').forEach((element) => {
+    const textAlign = element.style.textAlign || 'left'
+    const lineHeight = element.style.lineHeight || '1.9'
+    const marginBottom = element.style.marginBottom || '16px'
     setStyles(element, {
-      margin: '0 0 16px',
+      margin: `0 0 ${marginBottom}`,
       padding: '0 22px',
       paddingLeft: '22px',
       paddingRight: '22px',
       color: 'rgb(90, 87, 80)',
       fontSize: bodyFontSize,
-      lineHeight: '1.9',
+      lineHeight,
+      textAlign,
       boxSizing: 'border-box',
     })
   })
@@ -414,6 +465,7 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
   })
 
   clone.querySelectorAll<HTMLElement>('.article-quote').forEach((element) => {
+    const textAlign = element.style.textAlign || 'left'
     setStyles(element, {
       margin: '28px 22px',
       padding: '16px 0 16px 14px',
@@ -421,19 +473,22 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
       borderLeft: '2px solid rgba(80, 76, 68, 0.18)',
       color: 'rgb(104, 99, 90)',
       background: 'transparent',
-      textAlign: 'left',
+      textAlign,
       boxSizing: 'border-box',
     })
   })
 
   clone.querySelectorAll<HTMLElement>('.article-quote p').forEach((element) => {
+    const textAlign = element.style.textAlign || 'left'
+    const lineHeight = element.style.lineHeight || '1.9'
     setStyles(element, {
       margin: '0',
       padding: '0 10px 0 0',
       paddingRight: '10px',
       color: 'rgb(104, 99, 90)',
       fontSize: bodyFontSize,
-      lineHeight: '1.9',
+      lineHeight,
+      textAlign,
       boxSizing: 'border-box',
     })
   })
@@ -452,11 +507,13 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
   })
 
   clone.querySelectorAll<HTMLElement>('.article-callout p').forEach((element) => {
+    const lineHeight = element.style.lineHeight || '1.9'
     setStyles(element, {
       margin: '0',
       color: 'rgb(94, 89, 80)',
       fontSize: bodyFontSize,
-      lineHeight: '1.9',
+      lineHeight,
+      textAlign: 'left',
       boxSizing: 'border-box',
     })
   })
@@ -519,9 +576,9 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
 
   clone.querySelectorAll<HTMLElement>('.article-table').forEach((element) => {
     setStyles(element, {
-      width: `calc(100% - ${COPY_SIDE_INSET * 2}px)`,
+      width: `calc(100% - ${sideInset * 2}px)`,
       minWidth: '0',
-      maxWidth: `calc(100% - ${COPY_SIDE_INSET * 2}px)`,
+      maxWidth: `calc(100% - ${sideInset * 2}px)`,
       margin: `0 ${copySideInset}`,
       marginLeft: copySideInset,
       marginRight: copySideInset,
@@ -581,18 +638,20 @@ const normalizeRichTextStyles = (clone: HTMLElement) => {
 }
 
 const getRichTextArticleClone = async (node: HTMLElement) => {
+  const sideInset = resolveCopySideInset(node)
   const clone = cloneWithInlineStyles(node)
-  await prepareImagesForRichText(node, clone)
-  normalizeCopyStructure(clone)
-  normalizeRichTextStyles(clone)
+  await prepareImagesForRichText(node, clone, sideInset)
+  normalizeCopyStructure(clone, sideInset)
+  normalizeRichTextStyles(clone, sideInset)
   return clone
 }
 
 const getTextStyleArticleClone = (node: HTMLElement) => {
+  const sideInset = resolveCopySideInset(node)
   const clone = cloneWithInlineStyles(node)
-  removeImagesForTextStyleCopy(clone)
-  normalizeCopyStructure(clone)
-  normalizeRichTextStyles(clone)
+  removeImagesForTextStyleCopy(clone, sideInset)
+  normalizeCopyStructure(clone, sideInset)
+  normalizeRichTextStyles(clone, sideInset)
   return clone
 }
 

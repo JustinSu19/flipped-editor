@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { RefreshCw, Trash2, UploadCloud } from 'lucide-react'
+import { Maximize2, Minimize2, RefreshCw, Trash2, UploadCloud } from 'lucide-react'
 import { useRef } from 'react'
 import type { ContentBlock, ImageVariant } from '../types/content'
 import type { UploadedImage } from '../types/image'
@@ -25,14 +25,7 @@ export const fontFamilyMap: Record<StyleConfig['fontFamily'], string> = {
   yahei: '"Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif',
 }
 
-const whitespaceScale: Record<StyleConfig['whitespaceLevel'], number> = {
-  compact: 0.78,
-  balanced: 1,
-  airy: 1.24,
-}
-
-export const spacing = (styleConfig: StyleConfig, value: number) =>
-  Math.round(value * whitespaceScale[styleConfig.whitespaceLevel])
+export const spacing = (_styleConfig: StyleConfig, value: number) => Math.round(value)
 
 function colorMix(color: string, alpha: number) {
   const normalized = color.replace('#', '')
@@ -96,6 +89,8 @@ export const ImageBlock = ({
   const imageId = block.type === 'image' ? block.id : 'hero'
   const radius = currentVariant === 'wide' ? Math.max(styleConfig.imageRadius - 8, 8) : styleConfig.imageRadius
   const focalPoint = image?.focalPoint ?? { x: 50, y: 50 }
+  const canToggleFullBleed = currentVariant !== 'hero' && !className.includes('image-full-bleed')
+  const isEditable = Boolean(onImageChange || onImageUpload || onImageDelete)
 
   const openFilePicker = () => inputRef.current?.click()
 
@@ -143,7 +138,7 @@ export const ImageBlock = ({
 
   return (
     <figure
-      className={`article-image ${image ? 'adjustable-image' : ''} ${className}`}
+      className={`article-image ${image && isEditable ? 'adjustable-image' : ''} ${image?.fullBleed ? 'image-user-full-bleed' : ''} ${className}`}
       onClick={() => {
         if (!image && onImageUpload) openFilePicker()
       }}
@@ -153,7 +148,9 @@ export const ImageBlock = ({
         borderRadius: radius,
       }}
     >
-      <input ref={inputRef} type="file" accept="image/*" className="image-block-input" onChange={handleFileChange} />
+      {onImageUpload && (
+        <input ref={inputRef} type="file" accept="image/*" className="image-block-input" onChange={handleFileChange} />
+      )}
       {image ? (
         <>
           <img
@@ -165,7 +162,20 @@ export const ImageBlock = ({
               filter: imageFilter(image, styleConfig.imageFilterStrength),
             }}
           />
-          <div className="image-inline-actions">
+          {isEditable && <div className="image-inline-actions">
+            {onImageChange && canToggleFullBleed && (
+              <button
+                type="button"
+                title={image.fullBleed ? '恢复常规宽度' : '放大至页面两侧'}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onImageChange({ ...image, fullBleed: !image.fullBleed })
+                }}
+              >
+                {image.fullBleed ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                {image.fullBleed ? '收回' : '通栏'}
+              </button>
+            )}
             <button
               type="button"
               onClick={(event) => {
@@ -186,7 +196,7 @@ export const ImageBlock = ({
               <Trash2 size={13} />
               删除
             </button>
-          </div>
+          </div>}
         </>
       ) : (
         <div className="image-placeholder">
@@ -236,21 +246,24 @@ export const renderTextBlock = (block: ContentBlock, styleConfig: StyleConfig, i
       <p
         key={index}
         className={block.indent ? 'article-p article-p-indent' : 'article-p'}
-        style={{ marginBottom: spacing(styleConfig, styleConfig.paragraphSpacing) }}
+        style={{
+          marginBottom: spacing(styleConfig, styleConfig.paragraphSpacing),
+          textAlign: styleConfig.textAlign,
+        }}
         dangerouslySetInnerHTML={{ __html: block.text }}
       />
     )
   }
   if (block.type === 'quote') {
     return (
-      <blockquote key={index} className="article-quote">
+      <blockquote key={index} className="article-quote" style={{ textAlign: styleConfig.textAlign }}>
         <p dangerouslySetInnerHTML={{ __html: block.text }} />
       </blockquote>
     )
   }
   if (block.type === 'callout') {
     return (
-      <aside key={index} className="article-callout">
+      <aside key={index} className="article-callout" style={{ textAlign: 'left' }}>
         <p dangerouslySetInnerHTML={{ __html: block.text }} />
       </aside>
     )

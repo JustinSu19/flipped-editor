@@ -1,3 +1,4 @@
+import { AlignCenter, AlignLeft, AlignRight, Info } from 'lucide-react'
 import type { PreviewMode } from './PreviewPanel'
 import type { StyleConfig } from '../types/style'
 
@@ -8,14 +9,33 @@ type Props = {
   onReset: () => void
 }
 
-const WECHAT_PAGE_MARGIN = 22
-
 const update = <K extends keyof StyleConfig>(config: StyleConfig, key: K, value: StyleConfig[K]) => ({
   ...config,
   [key]: value,
 })
 
 const numberValue = (value: number, suffix = '') => `${Number.isInteger(value) ? value : value.toFixed(2)}${suffix}`
+
+const whitespacePresets: Record<
+  StyleConfig['whitespaceLevel'],
+  Pick<StyleConfig, 'lineHeight' | 'paragraphSpacing' | 'sectionSpacing'>
+> = {
+  compact: {
+    lineHeight: 1.75,
+    paragraphSpacing: 15,
+    sectionSpacing: 52,
+  },
+  balanced: {
+    lineHeight: 1.9,
+    paragraphSpacing: 20,
+    sectionSpacing: 68,
+  },
+  airy: {
+    lineHeight: 2.1,
+    paragraphSpacing: 28,
+    sectionSpacing: 88,
+  },
+}
 
 const themes: Array<{
   name: string
@@ -33,11 +53,11 @@ const themes: Array<{
     },
   },
   {
-    name: 'Ivory',
-    color: '#f1ead8',
+    name: 'White',
+    color: '#ffffff',
     value: {
-      backgroundColor: '#f7f6f1',
-      paperColor: '#f1ead8',
+      backgroundColor: '#f6f6f4',
+      paperColor: '#ffffff',
       textColor: '#625a4a',
       titleColor: '#3b3429',
     },
@@ -75,8 +95,16 @@ const themes: Array<{
 ]
 
 export function StylePanel({ value, previewMode, onChange, onReset }: Props) {
-  const pageMarginLocked = previewMode === 'wechat'
-  const visiblePageMargin = pageMarginLocked ? WECHAT_PAGE_MARGIN : value.pageMargin
+  const minimumPageMargin = previewMode === 'wechat' ? 22 : 16
+  const visiblePageMargin =
+    previewMode === 'wechat' ? Math.max(minimumPageMargin, value.wechatPageMargin) : value.pageMargin
+  const applyWhitespacePreset = (level: StyleConfig['whitespaceLevel']) => {
+    onChange({
+      ...value,
+      whitespaceLevel: level,
+      ...whitespacePresets[level],
+    })
+  }
 
   return (
     <section className="control-section">
@@ -86,19 +114,94 @@ export function StylePanel({ value, previewMode, onChange, onReset }: Props) {
           恢复默认
         </button>
       </div>
+      <div className="swatch-row">
+        {themes.map((theme) => (
+          <button
+            key={theme.name}
+            type="button"
+            className={value.paperColor.toLowerCase() === theme.value.paperColor.toLowerCase() ? 'active' : ''}
+            onClick={() => onChange({ ...value, ...theme.value })}
+          >
+            <span style={{ background: theme.color }} />
+            {theme.name}
+          </button>
+        ))}
+      </div>
+      <div className="field-grid select-grid">
+        <label>
+          <span>纸张字体</span>
+          <select
+            value={value.fontFamily}
+            onChange={(event) => onChange(update(value, 'fontFamily', event.target.value as StyleConfig['fontFamily']))}
+          >
+            <option value="songti">Songti</option>
+            <option value="fangsong">Fangsong</option>
+            <option value="serif">Serif</option>
+            <option value="yahei">微软雅黑</option>
+          </select>
+        </label>
+        <label>
+          <span>留白</span>
+          <select
+            value={value.whitespaceLevel}
+            onChange={(event) => applyWhitespacePreset(event.target.value as StyleConfig['whitespaceLevel'])}
+          >
+            <option value="compact">Compact</option>
+            <option value="balanced">Balanced</option>
+            <option value="airy">Airy</option>
+          </select>
+        </label>
+      </div>
+      <div className="alignment-field">
+        <span>对齐方式</span>
+        <div className="alignment-control" role="group" aria-label="正文与引用对齐方式">
+          {[
+            { value: 'left', label: '左对齐', Icon: AlignLeft },
+            { value: 'center', label: '居中', Icon: AlignCenter },
+            { value: 'right', label: '右对齐', Icon: AlignRight },
+          ].map(({ value: alignment, label, Icon }) => (
+            <button
+              key={alignment}
+              type="button"
+              className={value.textAlign === alignment ? 'active' : ''}
+              aria-pressed={value.textAlign === alignment}
+              onClick={() => onChange(update(value, 'textAlign', alignment as StyleConfig['textAlign']))}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="style-controls-divider" />
       <div className="field-grid slider-grid">
-        <label className={pageMarginLocked ? 'disabled-field' : undefined}>
+        <label>
           <span>
-            页边距 <b>{numberValue(visiblePageMargin, 'px')}</b>
+            <span className="field-title-with-tip">
+              页边距
+              <span className="field-tooltip">
+                <Info size={12} />
+                <span role="tooltip">
+                  公众号视角为保证阅读安全边距，最小值为 22px；可以继续向右增大留白。
+                </span>
+              </span>
+            </span>
+            <b>{numberValue(visiblePageMargin, 'px')}</b>
           </span>
           <input
             type="range"
-            min="16"
+            min={minimumPageMargin}
             max="56"
             value={visiblePageMargin}
-            disabled={pageMarginLocked}
-            title={pageMarginLocked ? '公众号视角已按实际阅读宽度固定，切到杂志视角可调整' : undefined}
-            onChange={(event) => onChange(update(value, 'pageMargin', Number(event.target.value)))}
+            onChange={(event) =>
+              onChange(
+                update(
+                  value,
+                  previewMode === 'wechat' ? 'wechatPageMargin' : 'pageMargin',
+                  Number(event.target.value),
+                ),
+              )
+            }
           />
         </label>
         <label>
@@ -162,46 +265,6 @@ export function StylePanel({ value, previewMode, onChange, onReset }: Props) {
             onChange={(event) => onChange(update(value, 'imageRadius', Number(event.target.value)))}
           />
         </label>
-      </div>
-      <div className="field-grid select-grid">
-        <label>
-          <span>纸张字体</span>
-          <select
-            value={value.fontFamily}
-            onChange={(event) => onChange(update(value, 'fontFamily', event.target.value as StyleConfig['fontFamily']))}
-          >
-            <option value="songti">Songti</option>
-            <option value="fangsong">Fangsong</option>
-            <option value="serif">Serif</option>
-            <option value="yahei">微软雅黑</option>
-          </select>
-        </label>
-        <label>
-          <span>留白</span>
-          <select
-            value={value.whitespaceLevel}
-            onChange={(event) =>
-              onChange(update(value, 'whitespaceLevel', event.target.value as StyleConfig['whitespaceLevel']))
-            }
-          >
-            <option value="compact">Compact</option>
-            <option value="balanced">Balanced</option>
-            <option value="airy">Airy</option>
-          </select>
-        </label>
-      </div>
-      <div className="swatch-row">
-        {themes.map((theme) => (
-          <button
-            key={theme.name}
-            type="button"
-            className={value.paperColor.toLowerCase() === theme.value.paperColor.toLowerCase() ? 'active' : ''}
-            onClick={() => onChange({ ...value, ...theme.value })}
-          >
-            <span style={{ background: theme.color }} />
-            {theme.name}
-          </button>
-        ))}
       </div>
     </section>
   )
